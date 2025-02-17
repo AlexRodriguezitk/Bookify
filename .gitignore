@@ -1,0 +1,25 @@
+# Ignorar archivos de Composer
+/vendor/
+
+# Ignorar archivos de configuración específicos del entorno
+/.env
+/.env.local
+/.env.*.local
+
+# Ignorar archivos temporales de PHP
+*.log
+*.swp
+*.swo
+
+# Ignorar directorios y archivos específicos de la IDE
+/.idea/
+/.vscode/
+/*.iml
+
+# Ignorar cachés y logs de Symfony, si usas Symfony
+/var/
+/cache/
+/logs/
+
+# Ignorar dependencias locales, como los archivos de instalación
+/composer.lock
