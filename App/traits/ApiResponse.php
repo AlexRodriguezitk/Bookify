@@ -7,7 +7,7 @@ use Flight;
 trait ApiResponse
 {
     public function success(array $data, string $message = 'Success', int $code = 200)
-    {
+    { 
         return Flight::json([
             'data' => $data,
             'status' => true,

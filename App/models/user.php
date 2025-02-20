@@ -40,7 +40,12 @@ class User
             $query = "SELECT * FROM users";
             $stmt = $connection->prepare($query);
             $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            //Remove password from response
+            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($users as $key => $user) {
+                unset($users[$key]['password']);
+            }
+            return $users;
         } catch (PDOException $e) {
             throw new Exception("Error al obtener todos los usuarios: " . $e->getMessage());
         }

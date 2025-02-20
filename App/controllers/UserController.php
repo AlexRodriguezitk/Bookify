@@ -21,7 +21,8 @@ class UserController
     {
         $user = User::get($id);
         if ($user) {
-            $this->success($user, 'User found', 200);
+            unset($user->password);
+            $this->success([$user], 'User found', 200);
         } else {
             $this->failed(null, 'User not found', 404);
         }
@@ -30,6 +31,20 @@ class UserController
     public function store()
     {
         $data = Flight::request()->data->getData();
+        
+        if (empty($data)) {
+            $this->failed(null, "No data provided", 400);
+            return;
+        }
+
+        $requiredFields = ['name', 'username', 'password', 'phone', 'rol', 'is_active'];
+        foreach ($requiredFields as $field) {
+            if (empty($data[$field])) {
+                $this->failed(null, "Field '$field' is required", 400);
+                return;
+            }
+        }
+
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         $user = new User(null, $data['name'], $data['username'], $data['password'], $data['phone'], $data['rol'], $data['is_active']);
         $user = User::create($user);
@@ -41,9 +56,9 @@ class UserController
         $data = Flight::request()->data->getData();
         $user = User::get($id);
         if ($user) {
-            $user->name = $data['name'];
+            $user->name = $data['name'] ?? $user->name;
             $user->username = $data['username'] ?? $user->username;
-            $user->password = $data['password'] ? password_hash($data['password'], PASSWORD_BCRYPT) : $user->password;
+            $user->password = isset($data['password']) ? password_hash($data['password'], PASSWORD_BCRYPT) : $user->password;
             $user->phone = $data['phone'] ?? $user->phone;
             $user->rol = $data['rol'] ?? $user->rol;
             $user->is_active = $data['is_active'] ?? $user->is_active;
@@ -51,6 +66,17 @@ class UserController
             $this->success([$user], 'User updated', 200);
         } else {
             $this->failed(null, 'User not found', 404);
+        }
+    }
+
+    public function destroy($id)
+    {
+        $user = User::get($id);
+        if ($user) {
+            User::delete($id);
+            $this->success([null], 'User deleted', 200);
+        } else {
+            $this->failed([null], 'User not found', 404);
         }
     }
 }

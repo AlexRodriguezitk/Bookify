@@ -3,6 +3,7 @@
 // Si estás utilizando Composer, require el autoloader.
 require 'vendor/autoload.php';
 
+
 //Rutas
 require 'routes/router.php';
 
