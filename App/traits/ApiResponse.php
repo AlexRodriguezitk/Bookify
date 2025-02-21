@@ -23,4 +23,5 @@ trait ApiResponse
             'message' => $message,
         ], $code);
     }
+
 }

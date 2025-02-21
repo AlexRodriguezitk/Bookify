@@ -114,4 +114,20 @@ class User
             throw new Exception("Error al actualizar el usuario: " . $e->getMessage());
         }
     }
+
+    //Funcion para eliminar un usuario
+    public static function Delete($id)
+    {
+        try {
+            $db = Database::getInstance();
+            $connection = $db->getConnection();
+            $query = 'DELETE FROM users WHERE id = :id';
+            $stmt = $connection->prepare($query);
+            $stmt->bindParam(':id', $id);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            throw new Exception("Error al eliminar el usuario: " . $e->getMessage());
+            return null;
+        }
+    }
 }
