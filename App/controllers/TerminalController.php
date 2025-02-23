@@ -3,6 +3,7 @@
 namespace App\controllers;
 
 use App\traits\ApiResponse;
+use App\traits\Log;
 use App\models\Terminal;
 use App\models\User;
 
@@ -12,6 +13,7 @@ use Exception;
 class TerminalController
 {
     use ApiResponse;
+    use Log;
 
     public function index()
     {
@@ -62,6 +64,7 @@ class TerminalController
         if ($terminal) {
             $terminal->terminal_ext = $data['terminal_ext'] ?? $terminal->terminal_ext;
             $terminal = Terminal::update($terminal);
+            $this->saveLog(null, 'TERMINAL_UPDATED', 'TERMINAL WAS UPDATED SUCCESSFULLY: ' . $terminal->terminal_ext);
             $this->success([$terminal], 'Terminal updated', 200);
         } else {
             $this->failed(null, 'Terminal not found', 404);
@@ -73,6 +76,7 @@ class TerminalController
         $terminal = Terminal::get($id);
         if ($terminal) {
             Terminal::delete($terminal);
+            $this->saveLog(null, 'TERMINAL_DELETED', 'TERMINAL WAS DELETED SUCCESSFULLY: ' . $terminal->terminal_ext);
             $this->success(null, 'Terminal deleted', 200);
         } else {
             $this->failed(null, 'Terminal not found', 404);
@@ -100,7 +104,8 @@ class TerminalController
         if ($terminal && $asesor) {
             try {
                 $message = Terminal::Assign($terminal, $asesor);
-                $this->success([$message, $terminal], 'Terminal asing', 200);
+                $this->saveLog(null, 'TERMINAL_ASSIGNED', 'TERMINAL WAS ASSIGNED SUCCESSFULLY: TERMINAL{' . $terminal->terminal_ext .'} ASESOR{' . $asesor->name . '}');
+                $this->success([$message, $terminal], 'Terminal assigned', 200);
             } catch (Exception $e) {
                 $this->failed(null, 'Terminal already assigned', 400);
             }
@@ -117,6 +122,7 @@ class TerminalController
         $asesor = User::get($data['asesor']);
         if ($terminal && $asesor) {
             $message = Terminal::Unassign($terminal, $asesor);
+            $this->saveLog(null, 'TERMINAL_UNASSIGNED', 'TERMINAL WAS UNASSIGNED SUCCESSFULLY: TERMINAL{' . $terminal->terminal_ext .'} ASESOR{' . $asesor->name . '}');
             $this->success([$message, $terminal], 'Terminal unassing', 200);
         } else {
             $this->failed(null, 'Terminal or asesor not found', 404);

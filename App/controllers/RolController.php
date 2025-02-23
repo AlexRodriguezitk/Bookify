@@ -3,11 +3,13 @@
 namespace App\controllers;
 
 use App\traits\ApiResponse;
+use App\traits\Log;
 use App\models\Rol;
 use Flight;
 
 class RolController {
     use ApiResponse;
+    use Log;
 
     public function index() {
         $roles = Rol::getAll();
@@ -41,6 +43,7 @@ class RolController {
 
         $rol = new Rol(null, $data['name'], $data['permissions']);
         $rol = Rol::create($rol);
+        $this->saveLog(null, 'ROL_CREATED', 'ROL WAS CREATED SUCCESSFULLY: ' . $rol->name);
         $this->success([$rol], 'Rol created', 201);
     }
 
@@ -52,6 +55,7 @@ class RolController {
             $rol->name = $data['name'] ?? $rol->name;
             $rol->permissions = $data['permissions'] ?? $rol->permissions;
             $rol = Rol::update($rol);
+            $this->saveLog(null, 'ROL_UPDATED', 'ROL WAS UPDATED SUCCESSFULLY: ' . $rol->name);
             $this->success([$rol], 'Rol updated', 200);
         } else {
             $this->failed(null, 'Rol not found', 404);
@@ -63,6 +67,7 @@ class RolController {
         $rol = Rol::get($id);
         if ($rol) {
             Rol::delete($id);
+            $this->saveLog(null, 'ROL_DELETED', 'ROL WAS DELETED SUCCESSFULLY: ' . $rol->name);
             $this->success([null], 'Rol deleted', 200);
         } else {
             $this->failed([null], 'Rol not found', 404);
