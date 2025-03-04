@@ -10,6 +10,7 @@ use App\controllers\CTFieldsController;
 use App\controllers\TicketController;
 use App\controllers\InteractionController;
 use App\controllers\LogController;
+use App\controllers\PermissionController;
 
 
 use Flight;
@@ -93,4 +94,11 @@ Flight::group('/tickets', function (){
 Flight::route('GET /logs', [new LogController(), 'index']);
 Flight::route('GET /logs/@id', [new LogController(), 'show']);
 Flight::route('DELETE /logs', [new LogController(), 'clear']);
+
+//Permission
+Flight::route('GET /permission', [new PermissionController(), 'index']);
+Flight::route('GET /permission/@id', [new PermissionController(), 'show']);
+Flight::route('POST /permission', [new PermissionController(), 'store']);
+Flight::route('PUT /permission/@id',[new PermissionController(), 'update']);
+Flight::route('DELETE /permission/@id',[new PermissionController(), 'destroy']);
 });
