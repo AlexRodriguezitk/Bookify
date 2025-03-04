@@ -23,5 +23,9 @@ trait ApiResponse
             'message' => $message,
         ], $code);
     }
-
+    
+    public function setJwtBearerToken(string $token)
+    {
+        Flight::response()->header('Authorization', 'Bearer ' . $token);
+    }
 }

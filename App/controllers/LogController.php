@@ -3,6 +3,7 @@
 //LogController.php
 namespace App\controllers;
 use App\traits\ApiResponse;
+use App\traits\HasPermissions;
 use App\traits\Log;
 use App\models\Log as LogModel;
 use Flight;
@@ -10,14 +11,25 @@ use Flight;
 class LogController
 {
     use ApiResponse;
+    use HasPermissions;
     use Log;
 
     public function index() {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'LOG.INDEX')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $logs = LogModel::getAll();
         $this->success($logs, 'Logs list', 200);
     }
 
     public function show($id) {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'LOG.SHOW')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $log = LogModel::get($id);
         if ($log) {
             $this->success([$log], 'Log found', 200);
@@ -27,6 +39,11 @@ class LogController
     }
 
     public function store() {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'LOG.STORE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $data = Flight::request()->data->getData();
         if (empty($data)) {
             $this->failed(null, "No data provided", 400);
@@ -46,6 +63,11 @@ class LogController
 
     //Clear logs with Log::DeleteAll()
     public function clear() {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'LOG.CLEAR')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         LogModel::deleteAll();
         $this->success(null, 'Logs cleared', 200);
     }

@@ -3,20 +3,32 @@
 namespace App\controllers;
 
 use App\traits\ApiResponse;
+use App\traits\HasPermissions;
 use App\traits\Log;
 use App\models\Rol;
 use Flight;
 
 class RolController {
     use ApiResponse;
+    use HasPermissions;
     use Log;
 
     public function index() {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'ROL.INDEX')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $roles = Rol::getAll();
         $this->success($roles, 'Roles list', 200);
     }
 
     public function show($id) {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'ROL.SHOW')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $rol = Rol::get($id);
         if ($rol) {
             $this->success([$rol], 'Rol found', 200);
@@ -26,6 +38,11 @@ class RolController {
     }
 
     public function store() {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'ROL.STORE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $data = Flight::request()->data->getData();
         
         if (empty($data)) {
@@ -49,6 +66,11 @@ class RolController {
 
     //update function
     public function update($id) {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'ROL.UPDATE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $data = Flight::request()->data->getData();
         $rol = Rol::get($id);
         if ($rol) {
@@ -64,6 +86,11 @@ class RolController {
 
     //delete function
     public function destroy($id) {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'ROL.DESTROY')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $rol = Rol::get($id);
         if ($rol) {
             Rol::delete($id);

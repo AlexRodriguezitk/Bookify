@@ -4,6 +4,7 @@ namespace App\controllers;
 
 use App\traits\ApiResponse;
 use App\traits\Log;
+use App\traits\HasPermissions;
 use App\models\User;
 use Flight;
 
@@ -12,15 +13,26 @@ class UserController
 {
     use ApiResponse;
     use Log;
+    use HasPermissions;
 
     public function index()
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USERS.INDEX')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $users = User::getAll();
         $this->success($users, 'Users list', 200);
     }
 
     public function show($id)
-    {
+    {   
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USERS.SHOW')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $user = User::get($id);
         if ($user) {
             unset($user->password);
@@ -32,6 +44,13 @@ class UserController
 
     public function store()
     {
+        //ChekPermissions
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USERS.STORE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
+
         $data = Flight::request()->data->getData();
         
         if (empty($data)) {
@@ -55,7 +74,12 @@ class UserController
     }
 
     public function update($id)
-    {
+    {   
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USERS.UPDATE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $data = Flight::request()->data->getData();
         $user = User::get($id);
         if ($user) {
@@ -75,6 +99,11 @@ class UserController
 
     public function destroy($id)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USERS.DESTROY')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $user = User::get($id);
         if ($user) {
             User::delete($id);
@@ -87,6 +116,11 @@ class UserController
 
     public function Active($id)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USERS.ACTIVE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $user = User::get($id);
         if ($user) {
             $user->is_active = 1;
@@ -100,6 +134,11 @@ class UserController
 
     public function Inactive($id)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USERS.INACTIVE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $user = User::get($id);
         if ($user) {
             $user->is_active = 0;
@@ -109,5 +148,41 @@ class UserController
         } else {
             $this->failed(null, 'User not found', 404);
         }
+    }
+
+    //Auth
+    public function login()
+    {
+        $data = Flight::request()->data->getData();
+        $user = User::getByUsername($data['username']);
+        if ($user && password_verify($data['password'], $user->password)) {
+            $token = \App\Auth::generateToken($user->id, $user->rol);
+            //Set Flight::set('user', $user);
+            Flight::set('user', $user);
+            $this->saveLog(null, 'USER_LOGIN', 'USER WAS LOGGED IN SUCCESSFULLY: ' . $user->name);
+            $this->setJwtBearerToken($token);
+            $this->success(['token' => $token], 'Login successful', 200);
+        } else {
+            $this->failed(null, 'Invalid credentials', 401);
+        }
+    }
+
+    public function register()
+    {
+        $data = Flight::request()->data->getData();
+        $user = User::getByUsername($data['username']);
+        if ($user) {
+            $this->failed(null, 'Username already exists', 400);
+            return;
+        }
+
+        $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
+        $user = new User(null, $data['name'], $data['username'], $data['password'], $data['phone'], $data['rol'], $data['is_active']);
+        $user = User::create($user);
+        //Loging and return JWT
+        $token = \App\Auth::generateToken($user->id, $user->rol);
+        $this->setJwtBearerToken($token);
+        $this->saveLog(null, 'USER_REGISTERED', 'USER WAS REGISTERED SUCCESSFULLY: ' . $user->name);
+        $this->success([$user], 'User registered', 201);
     }
 }

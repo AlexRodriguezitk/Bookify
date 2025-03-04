@@ -65,7 +65,7 @@ class ticket
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($result){
-                return new ticket($result['id'], $result['client'], $result['title'], $result['description'], $result['creation_date'], $result['status'], $result['priority'], $result['category'], $result['asesor']);
+                return new ticket($result['id'], $result['id_cliente'], $result['title'], $result['description'], $result['creation_date'], $result['status'], $result['priority'], $result['id_category'], $result['id_asesor']);
             }
         } catch (PDOException $e) {
             throw new Exception("Error al obtener el ticket: " . $e->getMessage());

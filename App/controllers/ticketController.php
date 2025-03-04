@@ -4,6 +4,7 @@ namespace App\controllers;
 
 use App\traits\ApiResponse;
 use App\traits\Log;
+use App\traits\HasPermissions;
 use App\models\Ticket;
 use App\models\User;
 use App\models\CT_Values;
@@ -13,20 +14,31 @@ use Flight;
 class TicketController
 {
     use ApiResponse;
+    use HasPermissions;
     use Log;
     
     public function index()
-    {
+    {   
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.INDEX')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $tickets = Ticket::getAll();
         $this->success($tickets, 'Tickets list', 200);
     }
 
     public function show($id)
-    {
+    {   
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.SHOW')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $ticket = Ticket::get($id);
         if ($ticket) {
             $custom_values = CT_Values::getByTicket($id);
-            $ticket->$custom_values = $custom_values;
+            $ticket->custom_values = $custom_values;
             $this->success([$ticket], 'Ticket found', 200);
         } else {
             $this->failed(null, 'Ticket not found', 404);
@@ -35,6 +47,11 @@ class TicketController
 
     public function store()
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.STORE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $data = Flight::request()->data->getData();
         
         if (empty($data)) {
@@ -68,10 +85,6 @@ class TicketController
 
             }
         }
-
-        //$ticket = new Ticket(null, $data['title'], $data['client'], $data['description'], $data['status'], $data['priority'], $data['category'], $data['asesor']);
-        //$ticket = Ticket::create($ticket);
-        //Creating CT_Values[custom_field_id, ticket_id, value]
         $ticket = new Ticket(null, $data['title'], $data['client'], $data['description'], $data['status'], $data['priority'], $data['category'], $data['asesor']);
         $ticket = Ticket::create($ticket);
         foreach ($data['custom_values'] as $value) {
@@ -85,6 +98,11 @@ class TicketController
 
     public function update($id)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.UPDATE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $data = Flight::request()->data->getData();
         $ticket = Ticket::get($id);
         if ($ticket) {
@@ -124,6 +142,11 @@ class TicketController
 
     public function destroy($id)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.DESTROY')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $ticket = Ticket::get($id);
         if ($ticket) {
             Ticket::delete($ticket);
@@ -136,37 +159,67 @@ class TicketController
     }
 
     public function getByCategory($category)
-    {
+    {   
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.GETBYCATEGORY')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $tickets = Ticket::getByCategory($category);
         $this->success($tickets, 'Tickets list', 200);
     }
 
     public function getByStatus($status)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.GETBYSTATUS')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $tickets = Ticket::getByStatus($status);
         $this->success($tickets, 'Tickets list', 200);
     }
 
     public function getByPriority($priority)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.GETBYPRIORITY')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $tickets = Ticket::getByPriority($priority);
         $this->success($tickets, 'Tickets list', 200);
     }
 
     public function getByAsesor($asesor)
-    {
+    {   
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.GETBYASESOR')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $tickets = Ticket::getByAsesor($asesor);
         $this->success($tickets, 'Tickets list', 200);
     }
 
     public function getByClient($client)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.GETBYCLIENT')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $tickets = Ticket::getByClient($client);
         $this->success($tickets, 'Tickets list', 200);
     }
 
     public function Assign($ticket, $asesor)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.ASSING')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $ticket = Ticket::get($ticket);
         $asesor = User::get($asesor);
         if ($ticket && $asesor) {

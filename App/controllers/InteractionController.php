@@ -4,23 +4,35 @@ namespace App\controllers;
 
 use App\traits\Log;
 use App\traits\ApiResponse;
+use App\traits\HasPermissions;
 use App\models\Interaction;
 use Flight;
 
 class InteractionController
 {
     use ApiResponse;
+    use HasPermissions;
     use Log;
 
 
     public function index()
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'INTERACTION.INDEX')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $interactions = Interaction::getAll();
         $this->success($interactions, 'Interactions list', 200);
     }
 
     public function show($id)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'INTERACTION.SHOW')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $interaction = Interaction::get($id);
         if ($interaction) {
             $this->success([$interaction], 'Interaction found', 200);
@@ -31,6 +43,11 @@ class InteractionController
 
     public function store()
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'INTERACTION.STORE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $data = Flight::request()->data->getData();
 
         if (empty($data)) {
@@ -54,6 +71,11 @@ class InteractionController
     //update function
     public function update($id)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'INTERACTION.UPDATE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $data = Flight::request()->data->getData();
         $interaction = Interaction::get($id);
         if ($interaction) {
@@ -72,6 +94,11 @@ class InteractionController
     //delete function
     public function destroy($id)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'INTERACTION.DESTROY')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $interaction = Interaction::get($id);
         if ($interaction) {
             Interaction::delete($id);
@@ -84,6 +111,11 @@ class InteractionController
 
     public function GetInteractionsByTicket($id_ticket)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'INTERACTION.GETINTERACTIONSBYTICKET')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $interactions = Interaction::getIntByTicket($id_ticket);
         if ($interactions) {
             $this->success($interactions, 'Interactions found', 200);

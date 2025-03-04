@@ -130,4 +130,24 @@ class User
             return null;
         }
     }
+
+    //Get user by username
+    public static function GetByUsername($username)
+    {
+        try {
+            $db = Database::getInstance();
+            $connection = $db->getConnection();
+            $query = "SELECT * FROM users WHERE username = :username";
+            $stmt = $connection->prepare($query);
+            $stmt->bindParam(':username', $username);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            if ($result) {
+                return new self($result['id'], $result['name'], $result['username'], $result['password'], $result['phone'], $result['rol'], $result['is_active']);
+            }
+            return null;
+        } catch (PDOException $e) {
+            throw new Exception("Error al obtener el usuario: " . $e->getMessage());
+        }
+    }
 }

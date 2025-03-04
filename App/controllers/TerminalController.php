@@ -4,6 +4,7 @@ namespace App\controllers;
 
 use App\traits\ApiResponse;
 use App\traits\Log;
+use App\traits\HasPermissions;
 use App\models\Terminal;
 use App\models\User;
 
@@ -13,16 +14,27 @@ use Exception;
 class TerminalController
 {
     use ApiResponse;
+    use HasPermissions;
     use Log;
 
     public function index()
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.INDEX')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $terminals = Terminal::getAll();
         $this->success($terminals, 'Terminals list', 200);
     }
 
     public function show($id)
-    {
+    {   
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.SHOW')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $terminal = Terminal::get($id);
         if ($terminal) {
             $this->success([$terminal], 'Terminal found', 200);
@@ -33,6 +45,11 @@ class TerminalController
 
     public function store()
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.STORE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         //Fields ID, terminal_ext
         $data = Flight::request()->data->getData();
 
@@ -59,6 +76,11 @@ class TerminalController
 
     public function update($id)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.UPDATE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $data = Flight::request()->data->getData();
         $terminal = Terminal::get($id);
         if ($terminal) {
@@ -73,6 +95,11 @@ class TerminalController
 
     public function destroy($id)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.DESTROY')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $terminal = Terminal::get($id);
         if ($terminal) {
             Terminal::delete($terminal);
@@ -86,6 +113,11 @@ class TerminalController
     //func GetAssignements Terminal $terminal::GetAssignments($asesor)
     public function getAssignments($id)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.GETASSIGNEMENTS')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $user = User::get($id);
         if ($user) {
             $assignements = Terminal::GetAssignments($user);
@@ -98,6 +130,11 @@ class TerminalController
     //Func Asing Terminal $terminal::Assing($terminal, $asesor) 
     public function assing($id)
     {   
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.ASSING')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $data = Flight::request()->data->getData();
         $terminal = Terminal::get($id);
         $asesor = User::get($data['asesor']);
@@ -117,6 +154,11 @@ class TerminalController
     //FUncion para desasignar terminal
     public function unassing($id)
     {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.UNASSING')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
         $data = Flight::request()->data->getData();
         $terminal = Terminal::get($id);
         $asesor = User::get($data['asesor']);

@@ -18,7 +18,13 @@ use Flight;
 
 //rutas Api Grupo
 Flight::group('/api', function () {
+
+//Rutas de Autenticacion
+Flight::route('POST /login', [new UserController(), 'login']);
+Flight::route('POST /register', [new UserController(), 'register']);
+
 //Rutas usuarios
+
 Flight::route('GET /users', [new UserController(), 'index']);
 Flight::route('GET /users/@id', [new UserController(), 'show']);
 Flight::route('POST /users', [new UserController(), 'store']);

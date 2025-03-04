@@ -11,14 +11,12 @@ use Exception;
 class Rol {
     public $id;
     public $name;
-    public $permissions;
 
     //Constructor
-    public function __construct($id = null, $name = null, $permissions = null)
+    public function __construct($id = null, $name = null)
     {
         $this->id = $id;
         $this->name = $name;
-        $this->permissions = $permissions;
     }
 
     //Funciones
@@ -51,7 +49,7 @@ class Rol {
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($result){
-                return new Rol($result['id'], $result['name'], $result['permissions']);
+                return new Rol($result['id'], $result['name']);
             }
         } catch (PDOException $e) {
             throw new Exception("Error al obtener el rol: " . $e->getMessage());
@@ -64,10 +62,9 @@ class Rol {
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = "INSERT INTO roles (name, permissions) VALUES (:name, :permissions)";
+            $query = "INSERT INTO roles (name) VALUES (:name)";
             $stmt = $connection->prepare($query);
             $stmt->bindParam(':name', $rol->name);
-            $stmt->bindParam(':permissions', $rol->permissions);
             $stmt->execute();
             $rol->id = $connection->lastInsertId();
             return $rol;
@@ -82,11 +79,10 @@ class Rol {
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = "UPDATE roles SET name = :name, permissions = :permissions WHERE id = :id";
+            $query = "UPDATE roles SET name = :name WHERE id = :id";
             $stmt = $connection->prepare($query);
             $stmt->bindParam(':id', $rol->id);
             $stmt->bindParam(':name', $rol->name);
-            $stmt->bindParam(':permissions', $rol->permissions);
             $stmt->execute();
             return $rol;
         } catch (PDOException $e) {
