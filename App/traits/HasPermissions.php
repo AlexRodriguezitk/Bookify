@@ -20,8 +20,8 @@ trait HasPermissions
             SELECT rp.is_allowed
             FROM users u
             JOIN roles r ON u.rol = r.id
-            JOIN role_permissions rp ON r.id = rp.role_id
-            JOIN permissions p ON rp.permission_id = p.id
+            JOIN role_permissions rp ON r.id = rp.id_rol
+            JOIN permissions p ON rp.id_permission = p.id
             WHERE u.id = :userId AND p.name = :permissionName
             LIMIT 1
         ");
@@ -40,8 +40,8 @@ trait HasPermissions
             SELECT rp.is_allowed
             FROM users u
             JOIN roles r ON u.rol = r.id
-            JOIN role_permissions rp ON r.id = rp.role_id
-            JOIN permissions p ON rp.permission_id = p.id
+            JOIN role_permissions rp ON r.id = rp.id_rol
+            JOIN permissions p ON rp.id_permission = p.id
             WHERE u.id = :userId AND p.name = 'ALL'
             LIMIT 1
         ");

@@ -106,4 +106,56 @@ class permission
             return null;
         }
     }
+
+    //Funcion para obtener asignaciones de terminales
+    public static function GetAssignments($rol)
+    {
+        try {
+            $db = Database::getInstance();
+            $connection = $db->getConnection();
+            $query = "SELECT permissions.id, permissions.name FROM permissions JOIN role_permissions ON permissions.id = role_permissions.id_permission WHERE role_permissions.id_rol = :id_rol";
+            $stmt = $connection->prepare($query);
+            $stmt->bindParam(':id_rol', $rol->id);
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $result;
+        } catch (PDOException $e) {
+            throw new Exception("Error al obtener las asignaciones de permisos: " . $e->getMessage());
+        }
+    }
+
+
+    public static function Assing($permission, $rol){
+        try {
+            $db = Database::getInstance();
+            $connection = $db->getConnection();
+            $query = "INSERT INTO role_permissions (id_permission, id_rol) VALUES (:id_permission, :id_rol)";
+            $stmt = $connection->prepare($query);
+            $stmt->bindParam(':id_permission', $permission->id);
+            $stmt->bindParam(':id_rol', $rol->id);
+            $stmt->execute();
+            $message = "Permiso $permission->name asignado al rol $rol->name";
+            return $message;
+        } catch (PDOException $e) {
+            throw new Exception("Error al asignar el permiso: " . $e->getMessage());
+        }
+    }
+
+    //desasignar terminal
+    public static function Unassign($permission, $rol)
+    {
+        try {
+            $db = Database::getInstance();
+            $connection = $db->getConnection();
+            $query = "DELETE FROM role_permissions WHERE id_rol = :id_rol AND id_permission = :id_permission";
+            $stmt = $connection->prepare($query);
+            $stmt->bindParam(':id_rol', $rol->id);
+            $stmt->bindParam(':id_permission', $permission->id);
+            $stmt->execute();
+            $message = "Permission $permission->name desasignada al rol $rol->name";
+            return $message;
+        } catch (PDOException $e) {
+            throw new Exception("Error al desasignar el permiso: " . $e->getMessage());
+        }
+    }
 }

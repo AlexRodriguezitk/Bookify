@@ -96,9 +96,12 @@ Flight::route('GET /logs/@id', [new LogController(), 'show']);
 Flight::route('DELETE /logs', [new LogController(), 'clear']);
 
 //Permission
-Flight::route('GET /permission', [new PermissionController(), 'index']);
-Flight::route('GET /permission/@id', [new PermissionController(), 'show']);
-Flight::route('POST /permission', [new PermissionController(), 'store']);
-Flight::route('PUT /permission/@id',[new PermissionController(), 'update']);
-Flight::route('DELETE /permission/@id',[new PermissionController(), 'destroy']);
+Flight::route('GET /permissions', [new PermissionController(), 'index']);
+Flight::route('GET /permissions/@id', [new PermissionController(), 'show']);
+Flight::route('POST /permissions', [new PermissionController(), 'store']);
+Flight::route('PUT /permissions/@id',[new PermissionController(), 'update']);
+Flight::route('DELETE /permissions/@id',[new PermissionController(), 'destroy']);
+Flight::route('POST /permissions/assign/@id', [new PermissionController(), 'assing']);
+Flight::route('POST /permissions/unassign/@id', [new PermissionController(), 'unassing']);
+Flight::route('GET /permissions/Assignments/@id', [new PermissionController(), 'getAssignments']);
 });

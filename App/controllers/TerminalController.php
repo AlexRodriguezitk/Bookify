@@ -121,9 +121,14 @@ class TerminalController
         $user = User::get($id);
         if ($user) {
             $assignements = Terminal::GetAssignments($user);
-            $this->success($assignements, 'Terminal assignements', 200);
+            if($assignements){
+                $this->success($assignements, 'Terminal assignements', 200);
+            }
+            else{
+                $this->failed(null, 'This User doesnt have Terminals assigned', 404);
+            }
         } else {
-            $this->failed(null, 'Terminal not found', 404);
+            $this->failed(null, 'User not found', 404);
         }
     }
 
@@ -136,6 +141,22 @@ class TerminalController
             return;
         }
         $data = Flight::request()->data->getData();
+        if (empty($data)) {
+            $this->failed(null, "No data provided", 400);
+            return;
+        }
+        try {
+            $requiredFields = ['asesor'];
+            foreach ($requiredFields as $field) {
+                if (empty($data[$field])) {
+                    $this->failed(null, "Field '$field' is required", 400);
+                    return;
+                }
+            }
+        } catch (Exception $e) {
+            $this->failed(null, "Field '$field' is required", 400);
+            return;
+        }
         $terminal = Terminal::get($id);
         $asesor = User::get($data['asesor']);
         if ($terminal && $asesor) {
@@ -160,6 +181,22 @@ class TerminalController
             return;
         }
         $data = Flight::request()->data->getData();
+        if (empty($data)) {
+            $this->failed(null, "No data provided", 400);
+            return;
+        }
+        try {
+            $requiredFields = ['asesor'];
+            foreach ($requiredFields as $field) {
+                if (empty($data[$field])) {
+                    $this->failed(null, "Field '$field' is required", 400);
+                    return;
+                }
+            }
+        } catch (Exception $e) {
+            $this->failed(null, "Field '$field' is required", 400);
+            return;
+        }
         $terminal = Terminal::get($id);
         $asesor = User::get($data['asesor']);
         if ($terminal && $asesor) {
