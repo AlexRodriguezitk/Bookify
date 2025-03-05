@@ -4,6 +4,7 @@ namespace App\controllers;
 
 use App\traits\ApiResponse;
 use App\traits\Log;
+use App\traits\ST_History;
 use App\traits\HasPermissions;
 use App\models\Ticket;
 use App\models\User;
@@ -15,6 +16,7 @@ class TicketController
 {
     use ApiResponse;
     use HasPermissions;
+    use ST_History;
     use Log;
     
     public function index()
@@ -92,7 +94,7 @@ class TicketController
             $custom_value = CT_Values::create($custom_value);
         }
         
-        $this->saveLog(null, 'TICKET_CREATED', 'TICKET WAS CREATED SUCCESSFULLY: ' . $ticket->title);
+        $this->saveLog($AuthUser->id, 'TICKET_CREATED', 'TICKET WAS CREATED SUCCESSFULLY: ' . $ticket->title);
         $this->success([$ticket], 'Ticket created', 201);
     }
 
@@ -109,6 +111,7 @@ class TicketController
             $ticket->title = $data['title'] ?? $ticket->title;
             $ticket->client = $data['client'] ?? $ticket->client;
             $ticket->description = $data['description'] ?? $ticket->description;
+            if($data['status']!= $ticket->status) $this->saveHistory($id, $ticket->status, $data['status'], $AuthUser->id);
             $ticket->status = $data['status'] ?? $ticket->status;
             $ticket->priority = $data['priority'] ?? $ticket->priority;
             $ticket->category = $data['category'] ?? $ticket->category;
@@ -133,7 +136,7 @@ class TicketController
                 }
             }
             $ticket = Ticket::update($ticket);
-            $this->saveLog(null, 'TICKET_UPDATED', 'TICKET WAS UPDATED SUCCESSFULLY: ' . $ticket->title);
+            $this->saveLog($AuthUser->id, 'TICKET_UPDATED', 'TICKET WAS UPDATED SUCCESSFULLY: ' . $ticket->title);
             $this->success([$ticket], 'Ticket updated', 200);
         } else {
             $this->failed(null, 'Ticket not found', 404);
@@ -151,7 +154,7 @@ class TicketController
         if ($ticket) {
             Ticket::delete($ticket);
             CT_Values::deleteByTicket($id);
-            $this->saveLog(null, 'TICKET_DELETED', 'TICKET WAS DELETED SUCCESSFULLY: ' . $ticket->title);
+            $this->saveLog($AuthUser->id, 'TICKET_DELETED', 'TICKET WAS DELETED SUCCESSFULLY: ' . $ticket->title);
             $this->success(null, 'Ticket deleted', 200);
         } else {
             $this->failed(null, 'Ticket not found', 404);
@@ -225,7 +228,7 @@ class TicketController
         if ($ticket && $asesor) {
             $ticket->asesor = $asesor->id;
             $ticket = Ticket::update($ticket);
-            $this->saveLog(null, 'TICKET_ASSIGNED', 'TICKET WAS ASSIGNED SUCCESSFULLY: ' . $ticket->title);
+            $this->saveLog($AuthUser->id, 'TICKET_ASSIGNED', 'TICKET WAS ASSIGNED SUCCESSFULLY: ' . $ticket->title);
             $this->success([$ticket], 'Ticket assigned', 200);
         } else {
             $this->failed(null, 'Ticket or Asesor not found', 404);

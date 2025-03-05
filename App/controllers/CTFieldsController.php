@@ -65,7 +65,7 @@ class CTFieldsController
 
         $field = new CT_Fields(null, $data['category'], $data['name'], $data['type']);
         $field = CT_Fields::create($field);
-        $this->saveLog(null, 'FIELD_CREATED', 'FIELD WAS CREATED SUCCESSFULLY: ' . $field->name);
+        $this->saveLog($AuthUser->id, 'FIELD_CREATED', 'FIELD WAS CREATED SUCCESSFULLY: ' . $field->name);
         $this->success([$field], 'Field created', 201);
     }
 
@@ -84,7 +84,7 @@ class CTFieldsController
             $field->name = $data['name'] ?? $field->name;
             $field->type = $data['type'] ?? $field->type;
             $field = CT_Fields::update($field);
-            $this->saveLog(null, 'FIELD_UPDATED', 'FIELD WAS UPDATED SUCCESSFULLY: ' . $field->name);
+            $this->saveLog($AuthUser->id, 'FIELD_UPDATED', 'FIELD WAS UPDATED SUCCESSFULLY: ' . $field->name);
             $this->success([$field], 'Field updated', 200);
         } else {
             $this->failed(null, 'Field not found', 404);
@@ -102,7 +102,7 @@ class CTFieldsController
         $field = CT_Fields::get($id);
         if ($field) {
             CT_Fields::delete($field);
-            $this->saveLog(null, 'FIELD_DELETED', 'FIELD WAS DELETED SUCCESSFULLY: ' . $field->name);
+            $this->saveLog($AuthUser->id, 'FIELD_DELETED', 'FIELD WAS DELETED SUCCESSFULLY: ' . $field->name);
             $this->success([null], 'Field deleted', 200);
         } else {
             $this->failed(null, 'Field not found', 404);

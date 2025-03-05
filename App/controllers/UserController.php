@@ -69,7 +69,7 @@ class UserController
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
         $user = new User(null, $data['name'], $data['username'], $data['password'], $data['phone'], $data['rol'], $data['is_active']);
         $user = User::create($user);
-        $this->saveLog(null, 'USER_CREATED', 'USER WAS CREATED SUCCESSFULLY: ' . $user->name);
+        $this->saveLog($AuthUser->id, 'USER_CREATED', 'USER WAS CREATED SUCCESSFULLY: ' . $user->name);
         $this->success([$user], 'User created', 201);
     }
 
@@ -90,7 +90,7 @@ class UserController
             $user->rol = $data['rol'] ?? $user->rol;
             $user->is_active = $data['is_active'] ?? $user->is_active;
             $user = User::update($user);
-            $this->saveLog(null, 'USER_UPDATED', 'USER WAS UPDATED SUCCESSFULLY: ' . $user->name);
+            $this->saveLog($AuthUser->id, 'USER_UPDATED', 'USER WAS UPDATED SUCCESSFULLY: ' . $user->name);
             $this->success([$user], 'User updated', 200);
         } else {
             $this->failed(null, 'User not found', 404);
@@ -107,7 +107,7 @@ class UserController
         $user = User::get($id);
         if ($user) {
             User::delete($id);
-            $this->saveLog(null, 'USER_DELETED', 'USER WAS DELETED SUCCESSFULLY: ' . $user->name);
+            $this->saveLog($AuthUser->id, 'USER_DELETED', 'USER WAS DELETED SUCCESSFULLY: ' . $user->name);
             $this->success([null], 'User deleted', 200);
         } else {
             $this->failed([null], 'User not found', 404);
@@ -125,7 +125,7 @@ class UserController
         if ($user) {
             $user->is_active = 1;
             $user = User::update($user);
-            $this->saveLog(null, 'USER_ACTIVE', 'USER WAS ACTIVATED SUCCESSFULLY: ' . $user->name);
+            $this->saveLog($AuthUser->id, 'USER_ACTIVE', 'USER WAS ACTIVATED SUCCESSFULLY: ' . $user->name);
             $this->success([$user], 'User activated', 200);
         } else {
             $this->failed(null, 'User not found', 404);
@@ -143,7 +143,7 @@ class UserController
         if ($user) {
             $user->is_active = 0;
             $user = User::update($user);
-            $this->saveLog(null, 'USER_INACTIVE', 'USER WAS INACTIVATED SUCCESSFULLY: ' . $user->name);
+            $this->saveLog($AuthUser->id, 'USER_INACTIVE', 'USER WAS INACTIVATED SUCCESSFULLY: ' . $user->name);
             $this->success([$user], 'User inactivated', 200);
         } else {
             $this->failed(null, 'User not found', 404);
@@ -159,7 +159,7 @@ class UserController
             $token = \App\Auth::generateToken($user->id, $user->rol);
             //Set Flight::set('user', $user);
             Flight::set('user', $user);
-            $this->saveLog(null, 'USER_LOGIN', 'USER WAS LOGGED IN SUCCESSFULLY: ' . $user->name);
+            $this->saveLog($user->id, 'USER_LOGIN', 'USER WAS LOGGED IN SUCCESSFULLY: ' . $user->name);
             $this->setJwtBearerToken($token);
             $this->success(['token' => $token], 'Login successful', 200);
         } else {
@@ -182,7 +182,7 @@ class UserController
         //Loging and return JWT
         $token = \App\Auth::generateToken($user->id, $user->rol);
         $this->setJwtBearerToken($token);
-        $this->saveLog(null, 'USER_REGISTERED', 'USER WAS REGISTERED SUCCESSFULLY: ' . $user->name);
+        $this->saveLog($AuthUser->id, 'USER_REGISTERED', 'USER WAS REGISTERED SUCCESSFULLY: ' . $user->name);
         $this->success([$user], 'User registered', 201);
     }
 }

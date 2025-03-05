@@ -69,6 +69,7 @@ class TerminalController
             $this->failed(null, "Field '$field' is required", 400);
             return;
         }
+        $this->saveLog($AuthUser->id, 'TERMINAL_CREATED', 'TERMINAL WAS CREATED SUCCESSFULLY: ' . $terminal->terminal_ext);
         $terminal = new Terminal(null, $data['terminal_ext']);
         $terminal = Terminal::create($terminal);
         $this->success([$terminal], 'Terminal created', 201);
@@ -86,7 +87,7 @@ class TerminalController
         if ($terminal) {
             $terminal->terminal_ext = $data['terminal_ext'] ?? $terminal->terminal_ext;
             $terminal = Terminal::update($terminal);
-            $this->saveLog(null, 'TERMINAL_UPDATED', 'TERMINAL WAS UPDATED SUCCESSFULLY: ' . $terminal->terminal_ext);
+            $this->saveLog($AuthUser->id, 'TERMINAL_UPDATED', 'TERMINAL WAS UPDATED SUCCESSFULLY: ' . $terminal->terminal_ext);
             $this->success([$terminal], 'Terminal updated', 200);
         } else {
             $this->failed(null, 'Terminal not found', 404);
@@ -103,7 +104,7 @@ class TerminalController
         $terminal = Terminal::get($id);
         if ($terminal) {
             Terminal::delete($terminal);
-            $this->saveLog(null, 'TERMINAL_DELETED', 'TERMINAL WAS DELETED SUCCESSFULLY: ' . $terminal->terminal_ext);
+            $this->saveLog($AuthUser->id, 'TERMINAL_DELETED', 'TERMINAL WAS DELETED SUCCESSFULLY: ' . $terminal->terminal_ext);
             $this->success(null, 'Terminal deleted', 200);
         } else {
             $this->failed(null, 'Terminal not found', 404);
@@ -162,7 +163,7 @@ class TerminalController
         if ($terminal && $asesor) {
             try {
                 $message = Terminal::Assign($terminal, $asesor);
-                $this->saveLog(null, 'TERMINAL_ASSIGNED', 'TERMINAL WAS ASSIGNED SUCCESSFULLY: TERMINAL{' . $terminal->terminal_ext .'} ASESOR{' . $asesor->name . '}');
+                $this->saveLog($AuthUser->id, 'TERMINAL_ASSIGNED', 'TERMINAL WAS ASSIGNED SUCCESSFULLY: TERMINAL{' . $terminal->terminal_ext .'} ASESOR{' . $asesor->name . '}');
                 $this->success([$message, $terminal], 'Terminal assigned', 200);
             } catch (Exception $e) {
                 $this->failed(null, 'Terminal already assigned', 400);
@@ -201,7 +202,7 @@ class TerminalController
         $asesor = User::get($data['asesor']);
         if ($terminal && $asesor) {
             $message = Terminal::Unassign($terminal, $asesor);
-            $this->saveLog(null, 'TERMINAL_UNASSIGNED', 'TERMINAL WAS UNASSIGNED SUCCESSFULLY: TERMINAL{' . $terminal->terminal_ext .'} ASESOR{' . $asesor->name . '}');
+            $this->saveLog($AuthUser->id, 'TERMINAL_UNASSIGNED', 'TERMINAL WAS UNASSIGNED SUCCESSFULLY: TERMINAL{' . $terminal->terminal_ext .'} ASESOR{' . $asesor->name . '}');
             $this->success([$message, $terminal], 'Terminal unassing', 200);
         } else {
             $this->failed(null, 'Terminal or asesor not found', 404);

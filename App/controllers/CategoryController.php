@@ -64,7 +64,7 @@ class CategoryController
 
         $category = new Category(null, $data['name'], $data['description']);
         $category = Category::create($category);
-        $this->saveLog(null, 'CATEGORY_CREATED', 'CATEGORY WAS CREATED SUCCESSFULLY: ' . $category->name);
+        $this->saveLog($AuthUser->id, 'CATEGORY_CREATED', 'CATEGORY WAS CREATED SUCCESSFULLY: ' . $category->name);
         $this->success([$category], 'Category created', 201);
     }
 
@@ -81,7 +81,7 @@ class CategoryController
             $category->name = $data['name'] ?? $category->name;
             $category->description = $data['description'] ?? $category->description;
             $category = Category::update($category);
-            $this->saveLog(null, 'CATEGORY_UPDATED', 'CATEGORY WAS UPDATED SUCCESSFULLY: ' . $category->name);
+            $this->saveLog($AuthUser->id, 'CATEGORY_UPDATED', 'CATEGORY WAS UPDATED SUCCESSFULLY: ' . $category->name);
             $this->success([$category], 'Category updated', 200);
         } else {
             $this->failed(null, 'Category not found', 404);
@@ -98,7 +98,7 @@ class CategoryController
         $category = Category::get($id);
         if ($category) {
             Category::delete($category);
-            $this->saveLog(null, 'CATEGORY_DELETED', 'CATEGORY WAS DELETED SUCCESSFULLY: ' . $category->name);
+            $this->saveLog($AuthUser->id, 'CATEGORY_DELETED', 'CATEGORY WAS DELETED SUCCESSFULLY: ' . $category->name);
             $this->success(null, 'Category deleted', 200);
         } else {
             $this->failed(null, 'Category not found', 404);

@@ -68,7 +68,7 @@ class PermissionController
 
         $permission = new Permission(null, $data['name'], $data['description']);
         $permission = Permission::create($permission);
-        $this->saveLog(null, 'PERMISSION_CREATED', 'PERMISSION WAS CREATED SUCCESSFULLY: ' . $permission->name);
+        $this->saveLog($AuthUser->id, 'PERMISSION_CREATED', 'PERMISSION WAS CREATED SUCCESSFULLY: ' . $permission->name);
         $this->success([$permission], 'PERMISSION created', 201);
     }    
 
@@ -85,7 +85,7 @@ class PermissionController
             $permission->name = $data['name'] ?? $permission->name;
             $permission->description = $data['description'] ?? $permission->description;
             $permission = Permission::update($permission);
-            $this->saveLog(null, 'PERMISSION_UPDATED', 'PERMISSION WAS UPDATED SUCCESSFULLY: ' . $permission->name);
+            $this->saveLog($AuthUser->id, 'PERMISSION_UPDATED', 'PERMISSION WAS UPDATED SUCCESSFULLY: ' . $permission->name);
             $this->success([$permission], 'Permission updated', 200);
         } else {
             $this->failed(null, 'Permission not found', 404);
@@ -102,7 +102,7 @@ class PermissionController
         $permission = Permission::get($id);
         if ($permission) {
             Permission::delete($id);
-            $this->saveLog(null, 'PERMISSION_DELETED', 'PERMISSION WAS DELETED SUCCESSFULLY: ' . $permission->name);
+            $this->saveLog($AuthUser->id, 'PERMISSION_DELETED', 'PERMISSION WAS DELETED SUCCESSFULLY: ' . $permission->name);
             $this->success([null], 'Permission deleted', 200);
         } else {
             $this->failed([null], 'Permission not found', 404);
@@ -159,7 +159,7 @@ class PermissionController
         if ($permission && $rol) {
             try {
                 $message = Permission::Assing($permission, $rol);
-                $this->saveLog(null, 'PERMISSION_ASSIGNED', 'PERMISSION WAS ASSIGNED SUCCESSFULLY: PERMISSION{' . $permission->name .'} ROL{' . $rol->name . '}');
+                $this->saveLog($AuthUser->id, 'PERMISSION_ASSIGNED', 'PERMISSION WAS ASSIGNED SUCCESSFULLY: PERMISSION{' . $permission->name .'} ROL{' . $rol->name . '}');
                 $this->success([$message, $permission], 'Permission assigned', 200);
             } catch (Exception $e) {
                 $this->failed(null, 'Permission already assigned', 400);
@@ -198,7 +198,7 @@ class PermissionController
         $rol = Rol::get($data['rol']);
         if ($permission && $rol) {
             $message = Permission::Unassign($permission, $rol);
-            $this->saveLog(null, 'PERMISSION_UNASSIGNED', 'PERMISSION WAS UNASSIGNED SUCCESSFULLY: PERMISSION{' . $permission->name .'} ROL{' . $rol->name . '}');
+            $this->saveLog($AuthUser->id, 'PERMISSION_UNASSIGNED', 'PERMISSION WAS UNASSIGNED SUCCESSFULLY: PERMISSION{' . $permission->name .'} ROL{' . $rol->name . '}');
             $this->success([$message, $permission], 'Permission unassing', 200);
         } else {
             $this->failed(null, 'Permission or Rol not found', 404);

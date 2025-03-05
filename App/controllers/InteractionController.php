@@ -64,7 +64,7 @@ class InteractionController
 
         $interaction = new Interaction(null, $data['id_ticket'], $data['id_user'], $data['message'], null, $data['type']);
         $interaction = Interaction::create($interaction);
-        $this->saveLog(null, 'INTERACTION_CREATED', 'INTERACTION WAS CREATED SUCCESSFULLY: ' . $interaction->message);
+        $this->saveLog($AuthUser->id, 'INTERACTION_CREATED', 'INTERACTION WAS CREATED SUCCESSFULLY: ' . $interaction->message);
         $this->success([$interaction], 'Interaction created', 201);
     }
 
@@ -84,7 +84,7 @@ class InteractionController
             $interaction->message = $data['message'] ?? $interaction->message;
             $interaction->type = $data['type'] ?? $interaction->type;
             $interaction = Interaction::update($interaction);
-            $this->saveLog(null, 'INTERACTION_UPDATED', 'INTERACTION WAS UPDATED SUCCESSFULLY: ' . $interaction->message);
+            $this->saveLog($AuthUser->id, 'INTERACTION_UPDATED', 'INTERACTION WAS UPDATED SUCCESSFULLY: ' . $interaction->message);
             $this->success([$interaction], 'Interaction updated', 200);
         } else {
             $this->failed(null, 'Interaction not found', 404);
@@ -102,7 +102,7 @@ class InteractionController
         $interaction = Interaction::get($id);
         if ($interaction) {
             Interaction::delete($id);
-            $this->saveLog(null, 'INTERACTION_DELETED', 'INTERACTION WAS DELETED SUCCESSFULLY: ' . $interaction->message);
+            $this->saveLog($AuthUser->id, 'INTERACTION_DELETED', 'INTERACTION WAS DELETED SUCCESSFULLY: ' . $interaction->message);
             $this->success([$interaction], 'Interaction deleted', 200);
         } else {
             $this->failed(null, 'Interaction not found', 404);
