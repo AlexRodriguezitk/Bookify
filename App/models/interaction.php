@@ -56,8 +56,8 @@ class Interaction
             $stmt->bindParam(':id', $id);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($result){
-                return new Interactions($result['id'], $result['id_ticket'], $result['id_user'], $result['message'], $result['interaction_date'], $result['type']);
+            if ($result) {
+                return new Interaction($result['id'], $result['id_ticket'], $result['id_user'], $result['message'], $result['interaction_date'], $result['type']);
             }
         } catch (PDOException $e) {
             throw new Exception("Error al obtener la interaccion: " . $e->getMessage());

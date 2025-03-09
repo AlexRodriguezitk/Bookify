@@ -13,9 +13,10 @@ class CategoryController
     use ApiResponse;
     use HasPermissions;
     use Log;
-    
+
     //index function
-    public function index() {
+    public function index()
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'CATEGORY.INDEX')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -26,7 +27,8 @@ class CategoryController
     }
 
     //show function
-    public function show($id) {
+    public function show($id)
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'CATEGORY.SHOW')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -41,14 +43,15 @@ class CategoryController
     }
 
     //store function
-    public function store() {
+    public function store()
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'CATEGORY.STORE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
         $data = Flight::request()->data->getData();
-        
+
         if (empty($data)) {
             $this->failed(null, "No data provided", 400);
             return;
@@ -69,7 +72,8 @@ class CategoryController
     }
 
     //update function
-    public function update($id) {
+    public function update($id)
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'CATEGORY.UPDATE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -79,7 +83,6 @@ class CategoryController
         $category = Category::get($id);
         if ($category) {
             $category->name = $data['name'] ?? $category->name;
-            $category->description = $data['description'] ?? $category->description;
             $category = Category::update($category);
             $this->saveLog($AuthUser->id, 'CATEGORY_UPDATED', 'CATEGORY WAS UPDATED SUCCESSFULLY: ' . $category->name);
             $this->success([$category], 'Category updated', 200);
@@ -89,7 +92,8 @@ class CategoryController
     }
 
     //delete function
-    public function destroy($id) {
+    public function destroy($id)
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'CATEGORY.DESTROY')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -99,7 +103,7 @@ class CategoryController
         if ($category) {
             Category::delete($category);
             $this->saveLog($AuthUser->id, 'CATEGORY_DELETED', 'CATEGORY WAS DELETED SUCCESSFULLY: ' . $category->name);
-            $this->success(null, 'Category deleted', 200);
+            $this->success([null], 'Category deleted', 200);
         } else {
             $this->failed(null, 'Category not found', 404);
         }

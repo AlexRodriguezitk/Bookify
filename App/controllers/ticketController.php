@@ -18,9 +18,9 @@ class TicketController
     use HasPermissions;
     use ST_History;
     use Log;
-    
+
     public function index()
-    {   
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.INDEX')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -31,7 +31,7 @@ class TicketController
     }
 
     public function show($id)
-    {   
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.SHOW')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -55,7 +55,7 @@ class TicketController
             return;
         }
         $data = Flight::request()->data->getData();
-        
+
         if (empty($data)) {
             $this->failed(null, "No data provided, please use this schema {title: string, client: string, description: string, status: string, priority: string, category: string, asesor: string, custom_values: [{custom_field_id: string, value: string}]}", 400);
             return;
@@ -64,14 +64,14 @@ class TicketController
         //ticket Required Fields
         $requiredFields = ['title', 'client', 'description', 'status', 'priority', 'category', 'asesor', 'custom_values'];
         //CT_Values Required Fields
-        $requiredFieldsValues = ['custom_field_id','value'];
+        $requiredFieldsValues = ['custom_field_id', 'value'];
 
         foreach ($requiredFields as $field) {
             if (empty($data[$field])) {
                 $this->failed(null, "Field '$field' is required", 400);
                 return;
             }
-            if($field == 'custom_values'){
+            if ($field == 'custom_values') {
                 if (empty($data[$field])) {
                     $this->failed(null, "Field '$field' is required", 400);
                     return;
@@ -84,7 +84,6 @@ class TicketController
                         }
                     }
                 }
-
             }
         }
         $ticket = new Ticket(null, $data['title'], $data['client'], $data['description'], $data['status'], $data['priority'], $data['category'], $data['asesor']);
@@ -93,7 +92,7 @@ class TicketController
             $custom_value = new CT_Values(null, $value['custom_field_id'], $ticket->id, $value['value']);
             $custom_value = CT_Values::create($custom_value);
         }
-        
+
         $this->saveLog($AuthUser->id, 'TICKET_CREATED', 'TICKET WAS CREATED SUCCESSFULLY: ' . $ticket->title);
         $this->success([$ticket], 'Ticket created', 201);
     }
@@ -111,13 +110,13 @@ class TicketController
             $ticket->title = $data['title'] ?? $ticket->title;
             $ticket->client = $data['client'] ?? $ticket->client;
             $ticket->description = $data['description'] ?? $ticket->description;
-            if($data['status']!= $ticket->status) $this->saveHistory($id, $ticket->status, $data['status'], $AuthUser->id);
+            if (!empty($data['status']) && $data['status'] != $ticket->status) $this->saveHistory($id, $ticket->status, $data['status'], $AuthUser->id);
             $ticket->status = $data['status'] ?? $ticket->status;
             $ticket->priority = $data['priority'] ?? $ticket->priority;
             $ticket->category = $data['category'] ?? $ticket->category;
             $ticket->asesor = $data['asesor'] ?? $ticket->asesor;
 
-            if($data['custom_values']){
+            if (!empty($data['custom_values'])) {
                 $requiredFieldsValues = ['custom_field_id', 'value'];
                 foreach ($data['custom_values'] as $value) {
                     foreach ($requiredFieldsValues as $fieldValues) {
@@ -155,14 +154,14 @@ class TicketController
             Ticket::delete($ticket);
             CT_Values::deleteByTicket($id);
             $this->saveLog($AuthUser->id, 'TICKET_DELETED', 'TICKET WAS DELETED SUCCESSFULLY: ' . $ticket->title);
-            $this->success(null, 'Ticket deleted', 200);
+            $this->success([null], 'Ticket deleted', 200);
         } else {
             $this->failed(null, 'Ticket not found', 404);
         }
     }
 
     public function getByCategory($category)
-    {   
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.GETBYCATEGORY')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -195,7 +194,7 @@ class TicketController
     }
 
     public function getByAsesor($asesor)
-    {   
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.GETBYASESOR')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);

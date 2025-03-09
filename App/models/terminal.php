@@ -157,4 +157,5 @@ class Terminal {
             throw new Exception("Error al desasignar la terminal: " . $e->getMessage());
         }
     }
+
 }

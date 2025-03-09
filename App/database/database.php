@@ -4,13 +4,15 @@ namespace App\database;
 
 use PDO;
 use PDOException;
+use Exception;
 
 class Database
 {
     private static $instance = null;
-    private $connection;
+    private $connection = null;
+    private $error = null;
 
-    //consturctor
+    // Constructor
     private function __construct()
     {
         $config = require __DIR__ . '/../config/config.php';
@@ -20,22 +22,34 @@ class Database
             $this->connection = new PDO($dsn, $config['db']['user'], $config['db']['password']);
             $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
-            die('Connection failed: ' . $e->getMessage());
+            $this->error = $e->getMessage(); // Guardar error sin lanzar excepción
         }
     }
 
-    //Funcion para obtener la instancia de la base de datos
+    // Obtener la instancia (Singleton)
     public static function getInstance()
     {
-        if (!self::$instance) {
+        if (self::$instance === null) {
             self::$instance = new self();
         }
         return self::$instance;
     }
 
-    //Funcion para obtener la conexion
+    // Obtener conexión, pero sin lanzar excepción
     public function getConnection()
     {
         return $this->connection;
+    }
+
+    // Verificar si hay error de conexión
+    public function hasError()
+    {
+        return $this->error !== null;
+    }
+
+    // Obtener mensaje de error
+    public function getError()
+    {
+        return $this->error;
     }
 }

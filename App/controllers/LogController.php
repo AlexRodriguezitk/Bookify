@@ -2,6 +2,7 @@
 
 //LogController.php
 namespace App\controllers;
+
 use App\traits\ApiResponse;
 use App\traits\HasPermissions;
 use App\traits\Log;
@@ -14,7 +15,8 @@ class LogController
     use HasPermissions;
     use Log;
 
-    public function index() {
+    public function index()
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'LOG.INDEX')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -24,7 +26,8 @@ class LogController
         $this->success($logs, 'Logs list', 200);
     }
 
-    public function show($id) {
+    public function show($id)
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'LOG.SHOW')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -38,7 +41,8 @@ class LogController
         }
     }
 
-    public function store() {
+    public function store()
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'LOG.STORE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -62,13 +66,14 @@ class LogController
     }
 
     //Clear logs with Log::DeleteAll()
-    public function clear() {
+    public function clear()
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'LOG.CLEAR')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
         LogModel::deleteAll();
-        $this->success(null, 'Logs cleared', 200);
+        $this->success([null], 'Logs cleared', 200);
     }
 }

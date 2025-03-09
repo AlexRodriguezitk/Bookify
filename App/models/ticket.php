@@ -102,7 +102,7 @@ class ticket
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = "UPDATE tickets SET client = :client, title = :title, description = :description, creation_date = :creation_date, status = :status, priority = :priority, category = :category, asesor = :asesor WHERE id = :id";
+            $query = "UPDATE tickets SET id_cliente  = :client, title = :title, description = :description, creation_date = :creation_date, status = :status, priority = :priority, id_category  = :category, 	id_asesor = :asesor WHERE id = :id";
             $stmt = $connection->prepare($query);
             $stmt->bindParam(':client', $ticket->client);
             $stmt->bindParam(':title', $ticket->title);

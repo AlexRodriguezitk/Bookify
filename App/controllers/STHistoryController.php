@@ -1,9 +1,11 @@
 <?php
 
 namespace App\controllers;
+
+
 use App\traits\ApiResponse;
 use App\traits\HasPermissions;
-use App\tratis\Log;
+use App\models\ticket;
 use App\models\ST_History as ST_HistoryModel;
 use Flight;
 
@@ -11,11 +13,10 @@ class STHistoryController
 {
     use ApiResponse;
     use HasPermissions;
-    use Log;
 
     public function index() {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'LOG.INDEX')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'STHISTORY.INDEX')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -25,7 +26,7 @@ class STHistoryController
 
     public function show($id) {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'LOG.SHOW')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'STHISTORY.SHOW')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -39,7 +40,7 @@ class STHistoryController
 
     public function store() {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'LOG.STORE')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'STHISTORY.STORE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -63,12 +64,29 @@ class STHistoryController
 
     public function clear() {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'LOG.CLEAR')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'STHISTORY.CLEAR')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
-        $this->saveLog($AuthUser->id, 'ST_HISTORY_CLEARED', 'ST_HISTORY WAS CLEARED SUCCESSFULLY: ' . $ST_History->id);
-        ST_History::deleteAll();
-        $this->success(null, 'ST_History cleared', 200);
+       // $this->saveLog($AuthUser->id, 'ST_HISTORY_CLEARED', 'ST_HISTORY WAS CLEARED SUCCESSFULLY: ' . $ST_History->id);
+        ST_HistoryModel::deleteAll();
+
+        $this->success([null], 'ST_History cleared', 200);
+    }
+
+    public function GetByTicket($id) {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'STHISTORY.GETBYTICKET')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
+
+        $ticket = Ticket::Get($id);
+        $ST_History = ST_HistoryModel::GetByTicket($ticket);
+        if ($ST_History) {
+            $this->success([$ST_History], 'ST_History found', 200);
+        } else {
+            $this->failed(null, 'Log ST_History found', 404);
+        }
     }
 }

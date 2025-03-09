@@ -39,8 +39,8 @@ class ST_History
             $stmt = $connection->prepare($query);
             $stmt->execute();
             //Remove password from response
-            $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            return $logs;
+            $ST_History = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $ST_History;
         } catch (PDOException $e) {
             throw new Exception("Error al obtener el historial de cambios: " . $e->getMessage());
         }
@@ -111,6 +111,22 @@ class ST_History
             $stmt->execute();
         } catch (PDOException $e) {
             throw new Exception("Error al eliminar el Historial: " . $e->getMessage());
+        }
+    }
+
+    public static function GetByTicket($ticket)
+    {
+        try {
+            $db = Database::getInstance();
+            $connection = $db->getConnection();
+            $query = "SELECT * FROM status_history WHERE id_ticket = :id_ticket";
+            $stmt = $connection->prepare($query);
+            $stmt->bindParam(':id_ticket', $ticket->id);
+            $stmt->execute();
+            $ST_History = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $ST_History;
+        } catch (PDOException $e) {
+            throw new Exception("Error al obtener el Historial: " . $e->getMessage());
         }
     }
 }

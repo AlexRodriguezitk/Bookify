@@ -29,7 +29,7 @@ class TerminalController
     }
 
     public function show($id)
-    {   
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.SHOW')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -69,9 +69,9 @@ class TerminalController
             $this->failed(null, "Field '$field' is required", 400);
             return;
         }
-        $this->saveLog($AuthUser->id, 'TERMINAL_CREATED', 'TERMINAL WAS CREATED SUCCESSFULLY: ' . $terminal->terminal_ext);
         $terminal = new Terminal(null, $data['terminal_ext']);
         $terminal = Terminal::create($terminal);
+        $this->saveLog($AuthUser->id, 'TERMINAL_CREATED', 'TERMINAL WAS CREATED SUCCESSFULLY: ' . $terminal->terminal_ext);
         $this->success([$terminal], 'Terminal created', 201);
     }
 
@@ -105,7 +105,7 @@ class TerminalController
         if ($terminal) {
             Terminal::delete($terminal);
             $this->saveLog($AuthUser->id, 'TERMINAL_DELETED', 'TERMINAL WAS DELETED SUCCESSFULLY: ' . $terminal->terminal_ext);
-            $this->success(null, 'Terminal deleted', 200);
+            $this->success([null], 'Terminal deleted', 200);
         } else {
             $this->failed(null, 'Terminal not found', 404);
         }
@@ -122,10 +122,9 @@ class TerminalController
         $user = User::get($id);
         if ($user) {
             $assignements = Terminal::GetAssignments($user);
-            if($assignements){
+            if ($assignements) {
                 $this->success($assignements, 'Terminal assignements', 200);
-            }
-            else{
+            } else {
                 $this->failed(null, 'This User doesnt have Terminals assigned', 404);
             }
         } else {
@@ -135,7 +134,7 @@ class TerminalController
 
     //Func Asing Terminal $terminal::Assing($terminal, $asesor) 
     public function assing($id)
-    {   
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.ASSING')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -163,7 +162,7 @@ class TerminalController
         if ($terminal && $asesor) {
             try {
                 $message = Terminal::Assign($terminal, $asesor);
-                $this->saveLog($AuthUser->id, 'TERMINAL_ASSIGNED', 'TERMINAL WAS ASSIGNED SUCCESSFULLY: TERMINAL{' . $terminal->terminal_ext .'} ASESOR{' . $asesor->name . '}');
+                $this->saveLog($AuthUser->id, 'TERMINAL_ASSIGNED', 'TERMINAL WAS ASSIGNED SUCCESSFULLY: TERMINAL{' . $terminal->terminal_ext . '} ASESOR{' . $asesor->name . '}');
                 $this->success([$message, $terminal], 'Terminal assigned', 200);
             } catch (Exception $e) {
                 $this->failed(null, 'Terminal already assigned', 400);
@@ -202,11 +201,10 @@ class TerminalController
         $asesor = User::get($data['asesor']);
         if ($terminal && $asesor) {
             $message = Terminal::Unassign($terminal, $asesor);
-            $this->saveLog($AuthUser->id, 'TERMINAL_UNASSIGNED', 'TERMINAL WAS UNASSIGNED SUCCESSFULLY: TERMINAL{' . $terminal->terminal_ext .'} ASESOR{' . $asesor->name . '}');
+            $this->saveLog($AuthUser->id, 'TERMINAL_UNASSIGNED', 'TERMINAL WAS UNASSIGNED SUCCESSFULLY: TERMINAL{' . $terminal->terminal_ext . '} ASESOR{' . $asesor->name . '}');
             $this->success([$message, $terminal], 'Terminal unassing', 200);
         } else {
             $this->failed(null, 'Terminal or asesor not found', 404);
         }
     }
-
 }

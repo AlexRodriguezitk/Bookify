@@ -1,98 +1,43 @@
 <?php
-session_start();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login'])) {
-    $url = 'http://localhost/bookify/api/login';
-    $data = [
-        "username" => "test",
-        "password" => "Test123"
-    ];
+// Configurar la URL de la API
+$url = "http://localhost/bookify/api/upload";
 
-    $options = [
-        'http' => [
-            'header'  => "Content-Type: application/json",
-            'method'  => 'POST',
-            'content' => json_encode($data)
-        ]
-    ];
+// Token de autenticación Bearer
+$token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE3NDEzMDY4MzUsImV4cCI6MTc0MTMxMDQzNSwic3ViIjoxLCJyb2xlIjoxfQ._zF4foYQe3a9vSCbLHcDnI9CcGPFb37YjIKngvjhbUg";
 
-    $context  = stream_context_create($options);
-    $response = file_get_contents($url, false, $context);
+// Archivo a subir (Cambia la ruta según tu archivo de prueba)
+$filePath = "C:/Users/iTark/OneDrive/Imágenes/WhatsApp Image 2025-01-20 at 1.40-Photoroom.jpg";
 
-    if ($response === FALSE) {
-        die('Error al conectar con la API.');
-    }
-
-    $responseData = json_decode($response, true);
-
-    if ($responseData['status'] && isset($responseData['data']['token'])) {
-        $_SESSION['jwt'] = $responseData['data']['token'];
-        $_SESSION['message'] = "Login exitoso. Token guardado en sesión.";
-    } else {
-        $_SESSION['message'] = "Error en el login: " . $responseData['message'];
-    }
-
-    header("Location: login.php");
-    exit;
+// Verificar si el archivo existe
+if (!file_exists($filePath)) {
+    die("❌ El archivo no existe: $filePath");
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['protected'])) {
-    if (!isset($_SESSION['jwt'])) {
-        die("No hay token disponible. Inicie sesión primero.");
-    }
+// Crear el array con el archivo
+$file = new CURLFile($filePath, mime_content_type($filePath), basename($filePath));
+$postData = ["file" => $file];
 
-    $protectedUrl = 'http://localhost/bookify/api/users';
-    $authHeader = "Authorization: Bearer " . $_SESSION['jwt'];
+// Inicializar cURL
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $url);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    "Authorization: Bearer $token"
+]);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-    $options = [
-        'http' => [
-            'header'  => "Content-Type: application/json\r\n" . $authHeader,
-            'method'  => 'GET'
-        ]
-    ];
+// Ejecutar la petición y obtener la respuesta
+$response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
 
-    $context  = stream_context_create($options);
-    $protectedResponse = file_get_contents($protectedUrl, false, $context);
-
-    if ($protectedResponse === FALSE) {
-        die('Error al acceder al endpoint protegido.');
-    }
-
-    $protectedData = json_decode($protectedResponse, true);
-    $_SESSION['protected_response'] = $protectedData;
-    header("Location: login.php");
-    exit;
+// Mostrar respuesta
+if ($httpCode === 200) {
+    echo "✅ Archivo subido con éxito:\n$response";
+} else {
+    echo "❌ Error en la subida (HTTP $httpCode):\n$response";
 }
+
 ?>
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-</head>
-<body>
-    <h2>Login</h2>
-
-    <?php if (isset($_SESSION['message'])): ?>
-        <p><?php echo $_SESSION['message']; unset($_SESSION['message']); ?></p>
-    <?php endif; ?>
-
-    <form method="post">
-        <button type="submit" name="login">Iniciar Sesión</button>
-    </form>
-
-    <?php if (isset($_SESSION['jwt'])): ?>
-        <h3>Token guardado en sesión</h3>
-        <form method="post">
-            <button type="submit" name="protected">Ir a Ruta Protegida</button>
-        </form>
-    <?php endif; ?>
-
-    <?php if (isset($_SESSION['protected_response'])): ?>
-        <h3>Respuesta de la Ruta Protegida</h3>
-        <pre><?php print_r($_SESSION['protected_response']); unset($_SESSION['protected_response']); ?></pre>
-    <?php endif; ?>
-</body>
-</html>
