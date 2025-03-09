@@ -34,7 +34,7 @@ class InstallController
             $dbName = $data['DB_NAME'] ?? 'bookify';
             $dbUser = $data['DB_USER'] ?? null;
             $dbPassword = $data['DB_PASSWORD'] ?? ''; // Ahora puede estar vacío
-            $jwtSecret = $data['JWT_SECRET'] ?? 'GERALDINE';
+            $jwtSecret = $data['JWT_SECRET'] ?? bin2hex(random_bytes(32));
             $jwtAlgorithm = $data['JWT_ALGORITHM'] ?? 'HS256';
             $jwtExpiration = $data['JWT_EXPIRATION'] ?? 3600;
 

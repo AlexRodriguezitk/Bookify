@@ -6,6 +6,7 @@ use App\traits\ApiResponse;
 use App\traits\Log;
 use App\traits\HasPermissions;
 use App\models\User;
+use App\models\Rol;
 use Flight;
 
 
@@ -58,7 +59,7 @@ class UserController
             return;
         }
 
-        $requiredFields = ['name', 'username', 'password', 'phone', 'rol', 'is_active'];
+        $requiredFields = ['name', 'username', 'password', 'rol', 'is_active'];
         foreach ($requiredFields as $field) {
             if (empty($data[$field])) {
                 $this->failed(null, "Field '$field' is required", 400);
@@ -67,7 +68,7 @@ class UserController
         }
 
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
-        $user = new User(null, $data['name'], $data['username'], $data['password'], $data['phone'], $data['rol'], $data['is_active']);
+        $user = new User(null, $data['name'], $data['username'], $data['password'], $data['phone'] ?? "0", $data['rol'], $data['is_active']);
         $user = User::create($user);
         $this->saveLog($AuthUser->id, 'USER_CREATED', 'USER WAS CREATED SUCCESSFULLY: ' . $user->name);
         $this->success([$user], 'User created', 201);
@@ -239,5 +240,21 @@ class UserController
         $this->setJwtBearerToken($token);
         $this->saveLog($user->id, 'USER_REGISTERED', 'USER WAS REGISTERED SUCCESSFULLY: ' . $user->name);
         $this->success([$user], 'User registered', 201);
+    }
+
+    public function Profile(){
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
+        $user = User::get($AuthUser->id);
+        $user->rol = Rol::Get($user->rol);
+        if ($user) {
+            unset($user->password);
+            $this->success([$user], 'User found', 200);
+        } else {
+            $this->failed(null, 'User not found', 404);
+        }
     }
 }
