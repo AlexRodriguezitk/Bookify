@@ -1,0 +1,16 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Obtener el nombre del directorio actual
+    RewriteCond %{REQUEST_URI} ^/([^/]+)/.*
+    RewriteRule ^ - [E=BASE_DIR:%1]
+
+    # Si la solicitud es la raíz ("/"), servir /public/index.html
+    RewriteRule ^$ %{ENV:BASE_DIR}/public/index.html [L]
+
+    # Redirigir todas las demás solicitudes a /public sin cambiar la URL visible
+    RewriteCond %{REQUEST_URI} !^/%{ENV:BASE_DIR}/public/
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ /%{ENV:BASE_DIR}/public/$1 [L]
+</IfModule>
