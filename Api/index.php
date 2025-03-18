@@ -21,13 +21,13 @@ $db = Database::getInstance();
 Flight::before('start', function () use ($db, $is_installed) {
     $route = Flight::request()->url;
     $publicRoutes = [
-        '/api/auth/login',
-        '/api/auth/register',
-        '/api/install'
+        '/auth/login',
+        '/auth/register',
+        '/install'
     ];
 
     // Si la base de datos falla y no estamos en /api/install, redirigir al controlador
-    if ($db->hasError() && $route !== '/api/install') {
+    if ($db->hasError() && $route !== '/install') {
         $controller = new InstallController();
         if ($is_installed) {
             $controller->handle($db->getError()); // Llamar al controlador
