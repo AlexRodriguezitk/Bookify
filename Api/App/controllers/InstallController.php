@@ -20,6 +20,30 @@ class InstallController
         );
     }
 
+    //Status() return the status of the installation
+    public function status()
+    {
+        //update or create htaacces file
+        $this->setHtaccess();
+        $envPath = __DIR__ . '/../../.env';
+        if (!file_exists($envPath)) {
+            return $this->success(['installed' => false], 'La aplicación no está instalada.');
+        }
+
+        $env = file_get_contents($envPath);
+        $env = explode("\n", $env);
+
+        $installed = false;
+        foreach ($env as $line) {
+            if (strpos($line, 'IS_INSTALLED=TRUE') !== false) {
+                $installed = true;
+                break;
+            }
+        }
+
+        return $this->success(['installed' => $installed], 'La aplicación está instalada.');
+    }
+
     public function install()
     {
         try {

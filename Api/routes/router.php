@@ -122,6 +122,7 @@ Flight::route('DELETE /logs', [new LogController(), 'clear']);
 
 //Permission
 Flight::route('GET /permissions', [new PermissionController(), 'index']);
+Flight::route('POST /permissions/check', [new PermissionController(), 'check']);
 Flight::route('GET /permissions/@id', [new PermissionController(), 'show']);
 Flight::route('POST /permissions', [new PermissionController(), 'store']);
 Flight::route('PUT /permissions/@id', [new PermissionController(), 'update']);
@@ -131,6 +132,9 @@ Flight::route('POST /permissions/unassign/@id', [new PermissionController(), 'un
 Flight::route('GET /permissions/Assignments/@id', [new PermissionController(), 'getAssignments']);
 
 Flight::route('POST /Upload', [new UploadController(), 'uploadFile']);
+
+//GET STATUS return the status of the api instalation
+Flight::route('GET /', [new InstallController(), 'status']);
 
 
 // Manejo de rutas 404 con verificación de .htaccess

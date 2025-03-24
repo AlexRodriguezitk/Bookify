@@ -10,6 +10,7 @@ use App\models\Rol;
 use Flight;
 
 use Exception;
+
 class PermissionController
 {
     use ApiResponse;
@@ -28,7 +29,7 @@ class PermissionController
     }
 
     public function show($id)
-    {   
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISIONS.SHOW')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -52,7 +53,7 @@ class PermissionController
         }
 
         $data = Flight::request()->data->getData();
-        
+
         if (empty($data)) {
             $this->failed(null, "No data provided", 400);
             return;
@@ -70,10 +71,10 @@ class PermissionController
         $permission = Permission::create($permission);
         $this->saveLog($AuthUser->id, 'PERMISSION_CREATED', 'PERMISSION WAS CREATED SUCCESSFULLY: ' . $permission->name);
         $this->success([$permission], 'PERMISSION created', 201);
-    }    
+    }
 
     public function update($id)
-    {   
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSIONS.UPDATE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -118,10 +119,9 @@ class PermissionController
         $rol = Rol::get($id);
         if ($rol) {
             $assignements = Permission::GetAssignments($rol);
-            if($assignements){
+            if ($assignements) {
                 $this->success($assignements, 'Permission assignements', 200);
-            }
-            else{
+            } else {
                 $this->failed(null, 'This rol doesnt have permissions assigned', 404);
             }
         } else {
@@ -131,7 +131,7 @@ class PermissionController
 
     //Func Asing Terminal $terminal::Assing($terminal, $asesor) 
     public function assing($id)
-    {   
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSIONS.ASSING')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -159,7 +159,7 @@ class PermissionController
         if ($permission && $rol) {
             try {
                 $message = Permission::Assing($permission, $rol);
-                $this->saveLog($AuthUser->id, 'PERMISSION_ASSIGNED', 'PERMISSION WAS ASSIGNED SUCCESSFULLY: PERMISSION{' . $permission->name .'} ROL{' . $rol->name . '}');
+                $this->saveLog($AuthUser->id, 'PERMISSION_ASSIGNED', 'PERMISSION WAS ASSIGNED SUCCESSFULLY: PERMISSION{' . $permission->name . '} ROL{' . $rol->name . '}');
                 $this->success([$message, $permission], 'Permission assigned', 200);
             } catch (Exception $e) {
                 $this->failed(null, 'Permission already assigned', 400);
@@ -198,11 +198,48 @@ class PermissionController
         $rol = Rol::get($data['rol']);
         if ($permission && $rol) {
             $message = Permission::Unassign($permission, $rol);
-            $this->saveLog($AuthUser->id, 'PERMISSION_UNASSIGNED', 'PERMISSION WAS UNASSIGNED SUCCESSFULLY: PERMISSION{' . $permission->name .'} ROL{' . $rol->name . '}');
+            $this->saveLog($AuthUser->id, 'PERMISSION_UNASSIGNED', 'PERMISSION WAS UNASSIGNED SUCCESSFULLY: PERMISSION{' . $permission->name . '} ROL{' . $rol->name . '}');
             $this->success([$message, $permission], 'Permission unassing', 200);
         } else {
             $this->failed(null, 'Permission or Rol not found', 404);
         }
     }
 
+
+    public function check()
+    {
+        $data = Flight::request()->data->getData();
+
+        if (empty($data)) {
+            $this->failed(null, "No data provided", 400);
+            return;
+        }
+
+        $requiredFields = ['permissions'];
+        foreach ($requiredFields as $field) {
+            if (empty($data[$field])) {
+                $this->failed(null, "Field '$field' is required", 400);
+                return;
+            }
+        }
+
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id)) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
+
+        $permissions = $data['permissions'];
+        $results = [];
+
+        foreach ($permissions as $permission) {
+            $access = $this->checkPermission($AuthUser->id, $permission);
+            $results[] = [
+                'permission' => $permission,
+                'access' => $access
+            ];
+        }
+
+        $this->success($results, 'Permission check results', 200);
+    }
 }

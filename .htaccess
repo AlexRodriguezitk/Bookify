@@ -6,11 +6,11 @@
     RewriteRule ^ - [E=BASE_DIR:%1]
 
     # Si la solicitud es la raíz ("/"), servir /public/index.html
-    RewriteRule ^$ %{ENV:BASE_DIR}/public/index.html [L]
+    RewriteRule ^$ %{ENV:BASE_DIR}/app/index.html [L]
 
     # Redirigir todas las demás solicitudes a /public sin cambiar la URL visible
-    RewriteCond %{REQUEST_URI} !^/%{ENV:BASE_DIR}/public/
+    RewriteCond %{REQUEST_URI} !^/%{ENV:BASE_DIR}/app/
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ /%{ENV:BASE_DIR}/public/$1 [L]
+    RewriteRule ^(.*)$ /%{ENV:BASE_DIR}/app/$1 [L]
 </IfModule>

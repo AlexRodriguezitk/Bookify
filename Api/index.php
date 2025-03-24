@@ -23,7 +23,9 @@ Flight::before('start', function () use ($db, $is_installed) {
     $publicRoutes = [
         '/auth/login',
         '/auth/register',
-        '/install'
+        '/install',
+        '/status',
+        '/'
     ];
 
     // Si la base de datos falla y no estamos en /api/install, redirigir al controlador
