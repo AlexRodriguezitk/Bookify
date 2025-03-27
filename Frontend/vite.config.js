@@ -5,7 +5,7 @@ import { fileURLToPath, URL } from 'node:url'
 // No usamos una base fija, sino que se ajusta dinámicamente en el servidor
 export default defineConfig({
   plugins: [vue()],
-  base: '/bookify', // Base vacía para que use rutas relativas
+  base: './', // Base vacía para que use rutas relativas
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

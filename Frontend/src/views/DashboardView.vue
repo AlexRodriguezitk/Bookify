@@ -1,50 +1,51 @@
 <template>
-  <div>
-    <h1>Dashboard</h1>
+  <div class="app-container">
+    <!-- Sidebar con imagen de perfil -->
+    <Sidebar
+      :profileImage="userProfileImage"
+      :mainLinks="mainLinks"
+      :secondaryLinks="secondaryLinks"
+    />
 
-    <!-- Mensaje especial para usuarios con el permiso "ALL" -->
-    <p v-if="hasAllPermission" class="admin-message">Tienes acceso total al sistema.</p>
-
-    <!-- Mostrar botón solo si el usuario tiene permiso de "CREATE.API" -->
-    <button v-if="canCreateApi" @click="createApi">Crear API</button>
-
-    <button class="btn btn-primary" v-if="canViewTickets" @click="createApi">Ver Tickets</button>
+    <!-- Contenido Principal -->
+    <div class="content">
+      <RouterView />
+    </div>
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue'
-import Permissions from '@/services/permissions'
+<script>
+import Sidebar from '@/components/SideBarC.vue'
 
-const hasAllPermission = ref(false)
-const canCreateApi = ref(false)
-const canViewTickets = ref(false)
-
-onMounted(async () => {
-  try {
-    const permissions = await Permissions.checkPermissions(['ALL', 'CREATE.API', 'VIEW.TICKETS'])
-
-    hasAllPermission.value = Permissions.hasPermission(permissions, 'ALL')
-    canCreateApi.value = Permissions.hasPermission(permissions, 'CREATE.API')
-    canViewTickets.value = Permissions.hasPermission(permissions, 'VIEW.TICKETS')
-  } catch (error) {
-    console.error('Error al verificar permisos:', error)
-  }
-})
-
-const createApi = () => {
-  console.log('Creando API...')
+export default {
+  components: { Sidebar },
+  data() {
+    return {
+      userProfileImage: 'https://randomuser.me/api/portraits/men/76.jpg', // Imagen de prueba
+      mainLinks: [
+        { icon: 'home', url: '/' },
+        { icon: 'cube', url: '/tickets' },
+        { icon: 'chart-line', url: '/activity' },
+      ],
+      secondaryLinks: [
+        { icon: 'cog', url: '/settings' },
+        { icon: 'sign-out-alt', url: '/logout' },
+      ],
+    }
+  },
 }
 </script>
 
 <style scoped>
-.admin-message {
-  background: #007bff;
-  color: white;
-  padding: 10px;
-  border-radius: 5px;
-  text-align: center;
-  font-weight: bold;
-  margin-bottom: 20px;
+/* Contenedor principal */
+.app-container {
+  display: flex;
+}
+
+/* Contenido principal */
+.content {
+  flex-grow: 1;
+  padding: 20px;
+  margin-left: 80px; /* Espacio para el sidebar */
 }
 </style>

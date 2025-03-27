@@ -1,28 +1,61 @@
 <script setup>
 import { onMounted, ref, onUnmounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { checkBackendStatus } from '@/services/api'
+import AuthService from '@/services/auth'
 
 const backendAvailable = ref(true)
+const isAuthenticated = ref(AuthService.isAuthenticated())
 const router = useRouter()
-let interval = null
+const route = useRoute()
+let backendInterval = null
+let authInterval = null
 
-// Comprobar el estado del backend
+// Comprobar el estado del backend periódicamente
 const checkStatus = async () => {
   try {
-    const status = await checkBackendStatus()
-    backendAvailable.value = status
+    backendAvailable.value = await checkBackendStatus()
   } catch (error) {
     console.error('Error checking backend status:', error)
     backendAvailable.value = false
   }
 }
 
-// Configurar verificaciones periódicas
-const setupIntervals = () => {
+// Verificar autenticación y renovar token
+const checkAuth = async () => {
+  if (AuthService.isAuthenticated()) {
+    try {
+      await AuthService.renewToken()
+      isAuthenticated.value = true
+    } catch (error) {
+      console.error('Error renewing token:', error)
+      AuthService.logout()
+      isAuthenticated.value = false
+      router.push('/login')
+    }
+  } else {
+    isAuthenticated.value = false
+    router.push('/login')
+  }
+}
+
+// Configurar intervalos de backend
+const setupBackendInterval = () => {
   checkStatus()
-  const delay = 30000 // 30 segundos es un delay saludable
-  interval = setInterval(checkStatus, delay)
+  backendInterval = setInterval(checkStatus, 600000) // 10 minutos
+}
+
+// Configurar o limpiar el intervalo de autenticación según la ruta
+const updateAuthInterval = () => {
+  if (authInterval) {
+    clearInterval(authInterval)
+    authInterval = null
+  }
+  if (route.meta.requiresAuth) {
+    //console.log('Starting auth interval')
+    checkAuth()
+    authInterval = setInterval(checkAuth, 300000) // 5 minutos
+  }
 }
 
 // Redirigir a /install si el backend se desconecta
@@ -30,13 +63,21 @@ watch(backendAvailable, (isAvailable) => {
   if (!isAvailable) {
     router.push('/install')
   } else if (router.currentRoute.value.path === '/install') {
-    router.push('/') // Si vuelve el backend y estamos en /install, redirigir a /
+    router.push('/')
   }
 })
 
-onMounted(setupIntervals)
+// Verificar cambios en la ruta para actualizar autenticación
+watch(() => route.meta.requiresAuth, updateAuthInterval, { immediate: true })
+
+onMounted(() => {
+  setupBackendInterval()
+  updateAuthInterval()
+})
+
 onUnmounted(() => {
-  if (interval) clearInterval(interval)
+  if (backendInterval) clearInterval(backendInterval)
+  if (authInterval) clearInterval(authInterval)
 })
 </script>
 
