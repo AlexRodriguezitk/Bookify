@@ -1,5 +1,5 @@
 <template>
-  <div class="sidebar d-flex flex-column align-items-center">
+  <div class="sidebar d-flex flex-column align-items-center rounded-3">
     <!-- Perfil: Muestra imagen o icono -->
     <div class="profile">
       <RouterLink to="/profile">
@@ -10,7 +10,12 @@
 
     <!-- Links principales -->
     <nav class="nav flex-column main-links">
-      <RouterLink v-for="(item, index) in mainLinks" :key="index" :to="item.url" class="nav-link">
+      <RouterLink
+        v-for="(item, index) in mainLinks"
+        :key="index"
+        :to="item.url"
+        class="nav-link btn btn-light mb-2"
+      >
         <i :class="`fas fa-${item.icon} icon`"></i>
       </RouterLink>
     </nav>
@@ -26,7 +31,7 @@
         v-for="(item, index) in secondaryLinks"
         :key="index"
         :to="item.url"
-        class="nav-link"
+        class="nav-link btn btn-light mt-2"
       >
         <i :class="`fas fa-${item.icon} icon`"></i>
       </RouterLink>
@@ -61,13 +66,11 @@ export default {
   top: 1.5em;
   height: calc(100vh - 3em);
   width: 60px;
-  background: #f8f9fa;
   color: #333;
   padding: 15px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -103,7 +106,7 @@ export default {
 /* Estilos de los links */
 .nav-link {
   text-align: center;
-  padding: 10px 0;
+  padding: 8px 10px;
 }
 
 .nav-link:hover .icon {
