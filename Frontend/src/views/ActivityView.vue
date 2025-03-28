@@ -22,41 +22,27 @@ export default {
   components: { Sidebar },
   data() {
     return {
-      userProfileImage: 'http://localhost/bookify/api/content/descargar.jfi', // Imagen de prueba
-      mainLinks: [],
-      secondaryLinks: [],
+      userProfileImage: 'https://randomuser.me/api/portraits/men/76.jpg', // Imagen de prueba
+      mainLinks: [
+        { icon: 'home', url: '/' }, // Siempre visible
+      ],
+      secondaryLinks: [
+        { icon: 'sign-out-alt', url: '/logout' }, // Siempre visible
+      ],
     }
   },
   async created() {
-    const imageUrl = 'api/content/descargar.jfif'
-    try {
-      const response = await fetch(imageUrl, { method: 'HEAD' })
-      if (response.ok) {
-        this.userProfileImage = imageUrl
-      } else {
-        this.userProfileImage = null
-      }
-    } catch {
-      this.userProfileImage = null
-    }
     const userPermissions = await Permissions.checkPermissions([
       'TICKETS.VIEW',
       'SETTINGS.VIEW',
-      'DASHBOARD.VIEW',
       'ACTIVITY.VIEW',
-      'USERS.VIEW',
-      'LOGOUT.VIEW',
     ])
 
     this.mainLinks = [
-      { icon: 'home', url: '/dashboard' },
+      { icon: 'home', url: '/' }, // Siempre visible
       Permissions.hasPermission(userPermissions, 'TICKETS.VIEW') && {
         icon: 'cube',
-        url: '/dashboard/tickets',
-      },
-      Permissions.hasPermission(userPermissions, 'USERS.VIEW') && {
-        icon: 'user-group',
-        url: '/users',
+        url: '/tickets',
       },
       Permissions.hasPermission(userPermissions, 'ACTIVITY.VIEW') && {
         icon: 'chart-line',
@@ -69,10 +55,7 @@ export default {
         icon: 'cog',
         url: '/settings',
       },
-      {
-        icon: 'sign-out-alt',
-        url: '/logout',
-      },
+      { icon: 'sign-out-alt', url: '/logout' }, // Siempre visible
     ].filter(Boolean)
   },
 }
@@ -82,12 +65,15 @@ export default {
 /* Contenedor principal */
 .app-container {
   display: flex;
+  height: 100vh; /* Usa toda la altura disponible */
+  overflow: hidden; /* Evita desbordamiento */
 }
 
 /* Contenido principal */
 .content {
   flex-grow: 1;
   padding: 20px;
+  overflow-y: auto; /* Permite scroll solo en el contenido */
   margin-left: 80px; /* Espacio para el sidebar */
 }
 </style>

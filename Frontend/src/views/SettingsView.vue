@@ -1,14 +1,14 @@
+2
 <template>
   <div class="ticket-view">
     <h1>Ticket Details</h1>
-    <div v-if="ticket" class="ticket-card">
+    <div class="ticket-card">
       <h2>{{ ticket.title }}</h2>
       <p><strong>Description:</strong> {{ ticket.description }}</p>
       <p><strong>Status:</strong> {{ ticket.status }}</p>
       <p><strong>Created At:</strong> {{ ticket.createdAt }}</p>
       <button @click="goBack">Back</button>
     </div>
-    <p v-else>Loading ticket...</p>
   </div>
 </template>
 
@@ -17,35 +17,17 @@ export default {
   name: 'TicketView',
   data() {
     return {
-      ticket: null,
+      ticket: {
+        title: 'Sample Ticket',
+        description: 'This is a sample ticket description.',
+        status: 'Open',
+        createdAt: '2023-10-01',
+      },
     }
-  },
-  created() {
-    const ticketId = this.$route.params.id
-    this.fetchTicketById(ticketId)
   },
   methods: {
     goBack() {
       this.$router.push('/')
-    },
-    fetchTicketById(id) {
-      // Simulación de datos, reemplázalo con una llamada real a la API
-      const mockTickets = {
-        1: {
-          title: 'Bug Report',
-          description: 'Fix login issue',
-          status: 'Open',
-          createdAt: '2025-03-20',
-        },
-        2: {
-          title: 'Feature Request',
-          description: 'Add dark mode',
-          status: 'In Progress',
-          createdAt: '2025-03-21',
-        },
-      }
-
-      this.ticket = mockTickets[id] || null
     },
   },
 }

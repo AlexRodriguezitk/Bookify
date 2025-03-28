@@ -19,11 +19,22 @@ const routes = [
   { path: '/register', component: Register },
   { path: '/logout', component: Logout, meta: { requiresAuth: true } },
   { path: '/install', component: Install },
-  { path: '/dashboard', component: Dashboard, meta: { requiresAuth: true } },
   {
-    path: '/dashboard/tickets',
-    component: Ticket,
-    meta: { requiresAuth: true, requiresPermission: 'TICKET.INDEX' },
+    path: '/dashboard',
+    component: Dashboard,
+    meta: { requiresAuth: true },
+    children: [
+      {
+        path: 'tickets',
+        component: Ticket,
+        meta: { requiresPermission: 'TICKET.INDEX' },
+      },
+      {
+        path: 'tickets/:id',
+        component: Ticket,
+        meta: { requiresPermission: 'TICKET.VIEW' },
+      },
+    ],
   },
 ]
 
