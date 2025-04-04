@@ -25,7 +25,7 @@ Flight::before('start', function () use ($db, $is_installed) {
         '/auth/register',
         '/install',
         '/status',
-        '/'
+        '/',
     ];
 
     // Si la base de datos falla y no estamos en /api/install, redirigir al controlador
@@ -41,6 +41,7 @@ Flight::before('start', function () use ($db, $is_installed) {
             return;
         }
     }
+
 
     // Aplicar autenticación a rutas privadas
     if (!in_array($route, $publicRoutes)) {

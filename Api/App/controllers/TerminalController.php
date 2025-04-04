@@ -103,7 +103,7 @@ class TerminalController
         }
         $terminal = Terminal::get($id);
         if ($terminal) {
-            Terminal::delete($terminal);
+            Terminal::delete($id);
             $this->saveLog($AuthUser->id, 'TERMINAL_DELETED', 'TERMINAL WAS DELETED SUCCESSFULLY: ' . $terminal->terminal_ext);
             $this->success([null], 'Terminal deleted', 200);
         } else {

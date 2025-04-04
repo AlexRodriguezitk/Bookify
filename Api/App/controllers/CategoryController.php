@@ -57,7 +57,7 @@ class CategoryController
             return;
         }
 
-        $requiredFields = ['name', 'description'];
+        $requiredFields = ['name'];
         foreach ($requiredFields as $field) {
             if (empty($data[$field])) {
                 $this->failed(null, "Field '$field' is required", 400);
@@ -65,7 +65,7 @@ class CategoryController
             }
         }
 
-        $category = new Category(null, $data['name'], $data['description']);
+        $category = new Category(null, $data['name']);
         $category = Category::create($category);
         $this->saveLog($AuthUser->id, 'CATEGORY_CREATED', 'CATEGORY WAS CREATED SUCCESSFULLY: ' . $category->name);
         $this->success([$category], 'Category created', 201);
@@ -101,7 +101,7 @@ class CategoryController
         }
         $category = Category::get($id);
         if ($category) {
-            Category::delete($category);
+            Category::delete($id);
             $this->saveLog($AuthUser->id, 'CATEGORY_DELETED', 'CATEGORY WAS DELETED SUCCESSFULLY: ' . $category->name);
             $this->success([null], 'Category deleted', 200);
         } else {

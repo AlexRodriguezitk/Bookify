@@ -5,12 +5,14 @@ import Permissions from '@/services/permissions'
 
 // Importar vistas
 import Home from '@/views/HomeView.vue'
-import Login from '@/views/LoginView.vue'
-import Register from '@/views/RegisterView.vue'
-import Logout from '@/views/LogoutView.vue'
-import Install from '@/views/InstallView.vue'
-import Dashboard from '@/views/DashboardView.vue'
-import Ticket from '@/views/TicketView.vue'
+import Login from '@/views/Auth/LoginView.vue'
+import Register from '@/views/Auth/RegisterView.vue'
+import Logout from '@/views/Auth/LogoutView.vue'
+import Install from '@/views/Setup/InstallView.vue'
+import Dashboard from '@/views/Dashboard/DashboardView.vue'
+import Inbox from '@/views/Dashboard/Tickets/InboxView.vue'
+import Ticket from '@/views/Dashboard/Tickets/TicketView.vue'
+import Settings from '@/views/Settings/SettingsView.vue'
 
 // Definir rutas
 const routes = [
@@ -25,14 +27,26 @@ const routes = [
     meta: { requiresAuth: true },
     children: [
       {
-        path: 'tickets',
+        path: '/tickets',
         component: Ticket,
         meta: { requiresPermission: 'TICKET.INDEX' },
+        children: [
+          {
+            path: 'settings',
+            component: Home,
+            meta: { requiresPermission: 'TICKET.SETTINGS' },
+          },
+          {
+            path: ':id/',
+            component: Inbox,
+            meta: { requiresPermission: 'TICKET.VIEW' },
+          },
+        ],
       },
       {
-        path: 'tickets/:id',
-        component: Ticket,
-        meta: { requiresPermission: 'TICKET.VIEW' },
+        path: '/settings',
+        component: Settings,
+        meta: { requiresPermission: 'SETTINGS.VIEW' },
       },
     ],
   },

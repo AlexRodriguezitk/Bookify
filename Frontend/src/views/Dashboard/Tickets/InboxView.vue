@@ -1,14 +1,13 @@
 <template>
   <div class="ticket-view">
-    <h1>Ticket Details</h1>
+    <h1>tickets</h1>
     <div v-if="ticket" class="ticket-card">
       <h2>{{ ticket.title }}</h2>
       <p><strong>Description:</strong> {{ ticket.description }}</p>
       <p><strong>Status:</strong> {{ ticket.status }}</p>
       <p><strong>Created At:</strong> {{ ticket.createdAt }}</p>
-      <button @click="goBack">Back</button>
+      <button @click="goBack">Go Back</button>
     </div>
-    <p v-else>Loading ticket...</p>
   </div>
 </template>
 

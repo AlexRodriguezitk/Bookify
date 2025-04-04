@@ -22,23 +22,21 @@ export default {
   components: { Sidebar },
   data() {
     return {
-      userProfileImage: 'http://localhost/bookify/api/content/descargar.jfi', // Imagen de prueba
+      userProfileImage: '', // Imagen de prueba
       mainLinks: [],
       secondaryLinks: [],
     }
   },
   async created() {
-    const imageUrl = 'api/content/descargar.jfif'
-    try {
-      const response = await fetch(imageUrl, { method: 'HEAD' })
-      if (response.ok) {
-        this.userProfileImage = imageUrl
-      } else {
-        this.userProfileImage = null
-      }
-    } catch {
+    const imageUrl = 'https://randomuser.me/api/portraits/men/90.jpg'
+    const img = new Image()
+    img.onload = () => {
+      this.userProfileImage = imageUrl
+    }
+    img.onerror = () => {
       this.userProfileImage = null
     }
+    img.src = imageUrl
     const userPermissions = await Permissions.checkPermissions([
       'TICKETS.VIEW',
       'SETTINGS.VIEW',
@@ -52,7 +50,7 @@ export default {
       { icon: 'home', url: '/dashboard' },
       Permissions.hasPermission(userPermissions, 'TICKETS.VIEW') && {
         icon: 'cube',
-        url: '/dashboard/tickets',
+        url: '/tickets',
       },
       Permissions.hasPermission(userPermissions, 'USERS.VIEW') && {
         icon: 'user-group',

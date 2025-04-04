@@ -97,6 +97,12 @@ class RolController
             return;
         }
         $rol = Rol::get($id);
+        //Protected roles by id
+        $protectedRoles = [1, 2]; // Example protected roles
+        if (in_array($id, $protectedRoles)) {
+            $this->failed(null, 'This role cannot be deleted', 403);
+            return;
+        }
         if ($rol) {
             Rol::delete($id);
             $this->saveLog($AuthUser->id, 'ROL_DELETED', 'ROL WAS DELETED SUCCESSFULLY: ' . $rol->name);
