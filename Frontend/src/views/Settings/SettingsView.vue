@@ -1,7 +1,15 @@
 <template>
   <main class="p-4">
     <h1 class="mb-4">Settings</h1>
-
+    <h4>General</h4>
+    <p>Configure general preferences, update company details, and customize your experience.</p>
+    <div class="row g-4">
+      <div class="col-lg-4 col-md-6"></div>
+    </div>
+    <hr class="my-4" />
+    <h4>System Settings</h4>
+    <p>Configure the main parameters of the system to ensure a smooth and efficient workflow.</p>
+    <br />
     <div class="row g-4">
       <!-- Roles Card -->
       <div class="col-lg-4 col-md-6">
@@ -11,11 +19,16 @@
               <h5 class="card-title mb-0">Roles</h5>
               <!-- Roles -->
               <button class="btn btn-success btn-sm" @click="openAddRoleModal">
-                <i class="fas fa-plus me-1"></i>
-                <span class="d-none d-sm-inline">Add Role</span>
+                <i class="fas fa-plus"></i>
+                <span class="d-none d-sm-inline ms-2">Add Role</span>
               </button>
             </div>
-            <RoleC :roles="roles" @edit-role="openEditRoleModal" @delete-role="deleteRole" />
+            <RoleC
+              :roles="roles"
+              @edit-role="openEditRoleModal"
+              @delete-role="deleteRole"
+              class="mb-3"
+            />
           </div>
         </div>
       </div>
@@ -28,14 +41,15 @@
               <h5 class="card-title mb-0">Categories</h5>
               <!-- Categories -->
               <button class="btn btn-success btn-sm" @click="openAddCategoryModal">
-                <i class="fas fa-plus me-1"></i>
-                <span class="d-none d-sm-inline">Add Category</span>
+                <i class="fas fa-plus"></i>
+                <span class="d-none d-sm-inline ms-2">Add Category</span>
               </button>
             </div>
             <CategoriesC
               :categories="categories"
               @edit-category="openEditCategoryModal"
               @delete-category="deleteCategory"
+              class="mb-3"
             />
           </div>
         </div>
@@ -49,18 +63,20 @@
               <h5 class="card-title mb-0">Terminals</h5>
               <!-- Terminals -->
               <button class="btn btn-success btn-sm" @click="openAddTerminalModal">
-                <i class="fas fa-plus me-1"></i>
-                <span class="d-none d-sm-inline">Add Terminal</span>
+                <i class="fas fa-plus"></i>
+                <span class="d-none d-sm-inline ms-2">Add Terminal</span>
               </button>
             </div>
             <TerminalsC
               :terminals="terminals"
               @edit-terminal="openEditTerminalModal"
               @delete-terminal="deleteTerminal"
+              class="mb-3"
             />
           </div>
         </div>
       </div>
+      <hr class="my-4" />
     </div>
 
     <!-- Role Modal -->

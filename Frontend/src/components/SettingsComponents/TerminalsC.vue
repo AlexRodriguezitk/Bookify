@@ -9,11 +9,11 @@
         <span class="mb-2 mb-md-0">{{ terminal.terminal_ext }}</span>
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
           <button class="btn btn-sm btn-warning" @click="editTerminal(terminal)">
-            <i class="fas fa-edit"></i> Edit
+            <i class="fas fa-edit"></i> <span class="d-none d-sm-inline">Edit</span>
           </button>
 
           <button class="btn btn-sm btn-danger" @click="deleteTerminal(terminal.id)">
-            <i class="fas fa-trash"></i> Delete
+            <i class="fas fa-trash"></i> <span class="d-none d-sm-inline">Delete</span>
           </button>
         </div>
       </li>

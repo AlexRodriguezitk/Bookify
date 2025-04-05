@@ -86,6 +86,12 @@ export default {
 .content {
   flex-grow: 1;
   padding: 20px;
-  margin-left: 80px; /* Espacio para el sidebar */
+  margin-left: 70px; /* Espacio para el sidebar */
+}
+
+@media (max-width: 768px) {
+  .content {
+    margin-left: 0px; /* Sin margen en pantallas pequeñas */
+  }
 }
 </style>
