@@ -14,11 +14,12 @@ class permission
     public $name;
     public $description;
 
-    public function __construct($id = null, $name = null, $description = null){
+    public function __construct($id = null, $name = null, $description = null)
+    {
         $this->id = $id;
-        $this->name= $name;
+        $this->name = $name;
         $this->description = $description;
-    } 
+    }
 
     //Funcion para obtener todos los logs
     public static function GetAll()
@@ -47,7 +48,7 @@ class permission
             $stmt->bindParam(':id', $id);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($result){
+            if ($result) {
                 return new permission($result['id'], $result['name'], $result['description']);
             }
         } catch (PDOException $e) {
@@ -113,7 +114,7 @@ class permission
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = "SELECT permissions.id, permissions.name FROM permissions JOIN role_permissions ON permissions.id = role_permissions.id_permission WHERE role_permissions.id_rol = :id_rol";
+            $query = "SELECT permissions.id, permissions.name FROM permissions JOIN role_permissions ON permissions.id = role_permissions.id_permission WHERE role_permissions.id_rol = :id_rol and role_permissions.is_allowed = 1";
             $stmt = $connection->prepare($query);
             $stmt->bindParam(':id_rol', $rol->id);
             $stmt->execute();
@@ -125,16 +126,37 @@ class permission
     }
 
 
-    public static function Assing($permission, $rol){
+    public static function Assign($permission, $rol)
+    {
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = "INSERT INTO role_permissions (id_permission, id_rol) VALUES (:id_permission, :id_rol)";
-            $stmt = $connection->prepare($query);
-            $stmt->bindParam(':id_permission', $permission->id);
-            $stmt->bindParam(':id_rol', $rol->id);
-            $stmt->execute();
-            $message = "Permiso $permission->name asignado al rol $rol->name";
+
+            // Verificar si ya existe la relación
+            $checkQuery = "SELECT * FROM role_permissions WHERE id_permission = :id_permission AND id_rol = :id_rol";
+            $checkStmt = $connection->prepare($checkQuery);
+            $checkStmt->bindParam(':id_permission', $permission->id);
+            $checkStmt->bindParam(':id_rol', $rol->id);
+            $checkStmt->execute();
+
+            if ($checkStmt->rowCount() > 0) {
+                // Ya existe: actualizamos is_allowed a true
+                $updateQuery = "UPDATE role_permissions SET is_allowed = 1 WHERE id_permission = :id_permission AND id_rol = :id_rol";
+                $updateStmt = $connection->prepare($updateQuery);
+                $updateStmt->bindParam(':id_permission', $permission->id);
+                $updateStmt->bindParam(':id_rol', $rol->id);
+                $updateStmt->execute();
+                $message = "Permiso $permission->name actualizado (is_allowed = true) para el rol $rol->name";
+            } else {
+                // No existe: insertamos nuevo
+                $insertQuery = "INSERT INTO role_permissions (id_permission, id_rol, is_allowed) VALUES (:id_permission, :id_rol, 1)";
+                $insertStmt = $connection->prepare($insertQuery);
+                $insertStmt->bindParam(':id_permission', $permission->id);
+                $insertStmt->bindParam(':id_rol', $rol->id);
+                $insertStmt->execute();
+                $message = "Permiso $permission->name asignado al rol $rol->name";
+            }
+
             return $message;
         } catch (PDOException $e) {
             throw new Exception("Error al asignar el permiso: " . $e->getMessage());

@@ -20,7 +20,7 @@ class PermissionController
     public function index()
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISIONS.INDEX')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSIONS.INDEX')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -112,7 +112,7 @@ class PermissionController
     public function getAssignments($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSIONS.GETASSIGNEMENTS')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSIONS.GETASSIGNMENTS')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -158,14 +158,20 @@ class PermissionController
         $rol = Rol::get($data['rol']);
         if ($permission && $rol) {
             try {
-                $message = Permission::Assing($permission, $rol);
-                $this->saveLog($AuthUser->id, 'PERMISSION_ASSIGNED', 'PERMISSION WAS ASSIGNED SUCCESSFULLY: PERMISSION{' . $permission->name . '} ROL{' . $rol->name . '}');
+                $message = Permission::Assign($permission, $rol);
+
+                $this->saveLog(
+                    $AuthUser->id,
+                    'PERMISSION_ASSIGNED',
+                    'PERMISSION WAS ASSIGNED SUCCESSFULLY: PERMISSION{' . $permission->name . '} ROL{' . $rol->name . '}'
+                );
+
                 $this->success([$message, $permission], 'Permission assigned', 200);
             } catch (Exception $e) {
-                $this->failed(null, 'Permission already assigned', 400);
+                $this->failed(null, 'Error assigning permission: ' . $e->getMessage(), 500);
             }
         } else {
-            $this->failed(null, 'Permission or rol not found', 404);
+            $this->failed(null, 'Permission or role not found', 404);
         }
     }
 

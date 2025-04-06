@@ -21,14 +21,14 @@ let lastRenewTime = 0
 const AuthService = {
   login: async (username, password) => {
     try {
-      console.log('[Auth] Iniciando login con:', username)
+      //console.log('[Auth] Iniciando login con:', username)
       const response = await axios.post(`${API_BASE_URL}/login`, { username, password })
       const { token } = response.data.data
       if (token) {
         Cookies.set('jwt', token, cookieOptions)
-        console.log('[Auth] Token guardado en cookie:', token)
+        //console.log('[Auth] Token guardado en cookie:', token)
       } else {
-        console.warn('[Auth] No se recibió token en la respuesta.')
+        //console.warn('[Auth] No se recibió token en la respuesta.')
       }
       return response.data
     } catch (error) {
@@ -39,7 +39,7 @@ const AuthService = {
 
   register: async (name, username, password, phone) => {
     try {
-      console.log('[Auth] Registrando nuevo usuario:', username)
+      //console.log('[Auth] Registrando nuevo usuario:', username)
       const response = await axios.post(`${API_BASE_URL}/register`, {
         name,
         username,
@@ -47,7 +47,7 @@ const AuthService = {
         phone,
       })
       if (response.data) {
-        console.log('[Auth] Registro exitoso, iniciando sesión automáticamente.')
+        //console.log('[Auth] Registro exitoso, iniciando sesión automáticamente.')
         const loginResponse = await AuthService.login(username, password)
         return loginResponse
       }
@@ -61,14 +61,14 @@ const AuthService = {
   renewToken: async () => {
     const now = Date.now()
     if (now - lastRenewTime < RENEW_COOLDOWN_MS) {
-      console.log('[Auth] Renovación de token ignorada por cooldown.')
+      //console.log('[Auth] Renovación de token ignorada por cooldown.')
       return null
     }
 
     try {
       lastRenewTime = now
       const token = Cookies.get('jwt')
-      console.log('[Auth] Intentando renovar token. Token actual:', token)
+      //console.log('[Auth] Intentando renovar token. Token actual:', token)
 
       const response = await axios.get(`${API_BASE_URL}/renew`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
@@ -76,9 +76,9 @@ const AuthService = {
       const { token: newToken } = response.data.data
       if (newToken) {
         Cookies.set('jwt', newToken, cookieOptions)
-        console.log('[Auth] Token renovado correctamente.')
+        //console.log('[Auth] Token renovado correctamente.')
       } else {
-        console.warn('[Auth] No se recibió nuevo token en la renovación.')
+        //console.warn('[Auth] No se recibió nuevo token en la renovación.')
       }
       return response.data
     } catch (error) {
@@ -89,7 +89,7 @@ const AuthService = {
         (error.response.data.message === 'Token inválido' ||
           error.response.data.message === 'Token no proporcionado')
       ) {
-        console.warn('[Auth] Token inválido o no proporcionado. Cerrando sesión.')
+        //console.warn('[Auth] Token inválido o no proporcionado. Cerrando sesión.')
         AuthService.logout()
         router.push('/login')
       }
@@ -100,18 +100,18 @@ const AuthService = {
 
   getToken: () => {
     const token = Cookies.get('jwt')
-    console.log('[Auth] Obteniendo token de cookie:', token)
+    //console.log('[Auth] Obteniendo token de cookie:', token)
     return token
   },
 
   logout: () => {
-    console.log('[Auth] Cerrando sesión, eliminando token.')
+    //console.log('[Auth] Cerrando sesión, eliminando token.')
     Cookies.remove('jwt')
   },
 
   isAuthenticated: () => {
     const tokenExists = !!Cookies.get('jwt')
-    console.log('[Auth] ¿Está autenticado?', tokenExists)
+    //console.log('[Auth] ¿Está autenticado?', tokenExists)
     return tokenExists
   },
 }

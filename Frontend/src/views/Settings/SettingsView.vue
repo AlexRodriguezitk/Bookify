@@ -1,14 +1,9 @@
 <template>
   <main class="p-4">
-    <h1 class="mb-4">Settings</h1>
-    <h4>General</h4>
-    <p>Configure general preferences, update company details, and customize your experience.</p>
-    <div class="row g-4">
-      <div class="col-lg-4 col-md-6"></div>
-    </div>
+    <h1 class="mb-4">Configuración</h1>
     <hr class="my-4" />
-    <h4>System Settings</h4>
-    <p>Configure the main parameters of the system to ensure a smooth and efficient workflow.</p>
+    <h4>Configuración del Sistema</h4>
+    <p>A continuación podra editar los parametros esenciales del sistema.</p>
     <br />
     <div class="row g-4">
       <!-- Roles Card -->
@@ -20,7 +15,7 @@
               <!-- Roles -->
               <button class="btn btn-success btn-sm" @click="openAddRoleModal">
                 <i class="fas fa-plus"></i>
-                <span class="d-none d-sm-inline ms-2">Add Role</span>
+                <span class="d-none d-sm-inline ms-2">Añadir Rol</span>
               </button>
             </div>
             <RoleC
@@ -42,7 +37,7 @@
               <!-- Categories -->
               <button class="btn btn-success btn-sm" @click="openAddCategoryModal">
                 <i class="fas fa-plus"></i>
-                <span class="d-none d-sm-inline ms-2">Add Category</span>
+                <span class="d-none d-sm-inline ms-2">Añadir Categoría</span>
               </button>
             </div>
             <CategoriesC
@@ -64,7 +59,7 @@
               <!-- Terminals -->
               <button class="btn btn-success btn-sm" @click="openAddTerminalModal">
                 <i class="fas fa-plus"></i>
-                <span class="d-none d-sm-inline ms-2">Add Terminal</span>
+                <span class="d-none d-sm-inline ms-2">Añadir Terminal</span>
               </button>
             </div>
             <TerminalsC
@@ -85,27 +80,39 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
-              {{ isEditingRole ? 'Edit Role' : 'Add Role' }}
+              {{ isEditingRole ? 'Editar rol' : 'Añadir rol' }}
             </h5>
             <button type="button" class="btn-close" @click="closeRoleModal"></button>
           </div>
           <div class="modal-body">
             <form @submit.prevent="isEditingRole ? updateRole() : addRole()">
               <div class="mb-3">
-                <label for="roleName" class="form-label">Role Name</label>
+                <label for="roleName" class="form-label">Nombre del rol</label>
                 <input
                   id="roleName"
                   v-model="roleToEdit.name"
                   class="form-control"
+                  :class="{
+                    'is-invalid': roleToEdit.name.length > 10,
+                  }"
                   type="text"
-                  placeholder="Enter role name"
+                  placeholder="Ingrese el nombre del rol"
+                  maxlength="10"
+                  required
                 />
+                <div class="invalid-feedback">
+                  El nombre del rol es obligatorio y debe tener como máximo 6 caracteres.
+                </div>
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" @click="closeRoleModal">
-                  Close
+                  <i class="fa-solid fa-xmark"></i>
+                  <span class="ms-2">Cerrar</span>
                 </button>
-                <button type="submit" class="btn btn-primary">Save changes</button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fa-solid fa-floppy-disk"></i>
+                  <span class="ms-2">Guardar</span>
+                </button>
               </div>
             </form>
           </div>
@@ -119,27 +126,32 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
-              {{ isEditingCategory ? 'Edit Category' : 'Add Category' }}
+              {{ isEditingCategory ? 'Editar categoría' : 'Añadir categoría' }}
             </h5>
             <button type="button" class="btn-close" @click="closeCategoryModal"></button>
           </div>
           <div class="modal-body">
             <form @submit.prevent="isEditingCategory ? updateCategory() : addCategory()">
               <div class="mb-3">
-                <label for="categoryName" class="form-label">Category Name</label>
+                <label for="categoryName" class="form-label">Nombre de la categoría</label>
                 <input
                   id="categoryName"
                   v-model="categoryToEdit.name"
                   class="form-control"
                   type="text"
-                  placeholder="Enter category name"
+                  placeholder="Ingrese el nombre de la categoría"
+                  maxlength="15"
+                  required
                 />
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" @click="closeCategoryModal">
-                  Close
+                  <i class="fa-solid fa-xmark"></i>
+                  <span class="ms-2">Cerrar</span>
                 </button>
-                <button type="submit" class="btn btn-primary">Save changes</button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fa-solid fa-floppy-disk"></i> <span class="ms-2">Guardar</span>
+                </button>
               </div>
             </form>
           </div>
@@ -153,7 +165,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">
-              {{ isEditingTerminal ? 'Edit Terminal' : 'Add Terminal' }}
+              {{ isEditingTerminal ? 'Editar terminal' : 'Añadir terminal' }}
             </h5>
             <button type="button" class="btn-close" @click="closeTerminalModal"></button>
           </div>
@@ -165,15 +177,24 @@
                   id="terminalExt"
                   v-model="terminalToEdit.terminal_ext"
                   class="form-control"
+                  :class="{
+                    'is-invalid': terminalToEdit.terminal_ext.length > 15,
+                  }"
+                  :disabled="isEditingTerminal"
                   type="text"
-                  placeholder="Enter terminal extension"
+                  placeholder="Ingrese la extensión de la terminal"
+                  maxlength="15"
+                  required
                 />
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" @click="closeTerminalModal">
-                  Close
+                  <i class="fa-solid fa-xmark"></i>
+                  <span class="ms-2">Cerrar</span>
                 </button>
-                <button type="submit" class="btn btn-primary">Save changes</button>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fa-solid fa-floppy-disk"></i> <span class="ms-2">Guardar</span>
+                </button>
               </div>
             </form>
           </div>

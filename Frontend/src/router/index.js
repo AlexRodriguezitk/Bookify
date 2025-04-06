@@ -13,6 +13,7 @@ import Dashboard from '@/views/Dashboard/DashboardView.vue'
 import Inbox from '@/views/Dashboard/Tickets/InboxView.vue'
 import Ticket from '@/views/Dashboard/Tickets/TicketView.vue'
 import Settings from '@/views/Settings/SettingsView.vue'
+import Roles from '@/views/Roles/RoleView.vue'
 
 // Definir rutas
 const routes = [
@@ -47,6 +48,11 @@ const routes = [
         path: '/settings',
         component: Settings,
         meta: { requiresPermission: 'SETTINGS.VIEW' },
+      },
+      {
+        path: '/roles/:id',
+        component: Roles,
+        meta: { requiresPermission: 'ROLES.VIEW' },
       },
     ],
   },
