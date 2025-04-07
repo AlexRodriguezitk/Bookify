@@ -1,16 +1,16 @@
 <template>
-  <div class="permission-list container">
+  <div class="permission-list">
     <ul class="list-group">
       <li
         v-for="permission in permissions"
         :key="permission.id"
-        class="list-group-item d-flex justify-content-between align-items-center"
+        class="list-group-item d-flex justify-content-between align-items-start flex-column flex-sm-row"
       >
-        <div>
+        <div class="me-3 flex-grow-1">
           <strong>{{ permission.name }}</strong>
-          <div class="text-muted">{{ permission.description }}</div>
+          <div class="text-muted small text-break">{{ permission.description }}</div>
         </div>
-        <div class="form-check form-switch">
+        <div class="form-check form-switch mt-2 mt-sm-0 align-self-start align-self-sm-center">
           <input
             class="form-check-input"
             type="checkbox"
@@ -33,18 +33,13 @@ export default {
       required: true,
     },
     grantedIds: {
-      // IDs de permisos que ya están concedidos
       type: Array,
       default: () => [],
     },
   },
   methods: {
     togglePermission(id, checked) {
-      if (checked) {
-        this.$emit('permission-granted', id)
-      } else {
-        this.$emit('permission-denied', id)
-      }
+      this.$emit(checked ? 'permission-granted' : 'permission-denied', id)
     },
   },
 }
@@ -53,5 +48,11 @@ export default {
 <style scoped>
 .permission-list {
   margin-top: 20px;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.list-group-item {
+  word-break: break-word;
 }
 </style>

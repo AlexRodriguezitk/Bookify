@@ -201,6 +201,28 @@
         </div>
       </div>
     </div>
+    <!-- Confirm Delete Modal -->
+    <div class="modal fade" ref="confirmDeleteModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">Confirmar Eliminación</h5>
+            <button type="button" class="btn-close" @click="closeConfirmDeleteModal"></button>
+          </div>
+          <div class="modal-body">
+            <p>
+              ¿Estás seguro que deseas eliminar este
+              <strong>{{ deleteTarget.type }}</strong
+              >? Esta acción no se puede deshacer.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" @click="closeConfirmDeleteModal">Cancelar</button>
+            <button class="btn btn-danger" @click="confirmDelete">Eliminar</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
@@ -222,6 +244,13 @@ export default {
       roles: [],
       categories: [],
       terminals: [],
+      deleteTarget: {
+        type: '',
+        id: null,
+        callback: null,
+      },
+      modalConfirmDeleteInstance: null,
+
       roleToEdit: { id: null, name: '' },
       categoryToEdit: { id: null, name: '' },
       terminalToEdit: { id: null, terminal_ext: '' },
@@ -273,9 +302,11 @@ export default {
       this.closeRoleModal()
       await this.fetchRoles()
     },
-    async deleteRole(roleId) {
-      await makeQuery(`/roles/${roleId}`, 'DELETE')
-      await this.fetchRoles()
+    deleteRole(roleId) {
+      this.openConfirmDeleteModal('rol', roleId, async (id) => {
+        await makeQuery(`/roles/${id}`, 'DELETE')
+        await this.fetchRoles()
+      })
     },
 
     // --- CATEGORIES ---
@@ -314,9 +345,11 @@ export default {
       this.closeCategoryModal()
       await this.fetchCategories()
     },
-    async deleteCategory(categoryId) {
-      await makeQuery(`/categories/${categoryId}`, 'DELETE')
-      await this.fetchCategories()
+    deleteCategory(categoryId) {
+      this.openConfirmDeleteModal('categoría', categoryId, async (id) => {
+        await makeQuery(`/categories/${id}`, 'DELETE')
+        await this.fetchCategories()
+      })
     },
 
     // --- TERMINALS ---
@@ -355,9 +388,25 @@ export default {
       this.closeTerminalModal()
       await this.fetchTerminals()
     },
-    async deleteTerminal(terminalId) {
-      await makeQuery(`/terminals/${terminalId}`, 'DELETE')
-      await this.fetchTerminals()
+    deleteTerminal(terminalId) {
+      this.openConfirmDeleteModal('terminal', terminalId, async (id) => {
+        await makeQuery(`/terminals/${id}`, 'DELETE')
+        await this.fetchTerminals()
+      })
+    },
+    openConfirmDeleteModal(type, id, callback) {
+      this.deleteTarget = { type, id, callback }
+      this.modalConfirmDeleteInstance = new Modal(this.$refs.confirmDeleteModal)
+      this.modalConfirmDeleteInstance.show()
+    },
+    closeConfirmDeleteModal() {
+      if (this.modalConfirmDeleteInstance) this.modalConfirmDeleteInstance.hide()
+    },
+    async confirmDelete() {
+      if (this.deleteTarget.callback) {
+        await this.deleteTarget.callback(this.deleteTarget.id)
+      }
+      this.closeConfirmDeleteModal()
     },
   },
 }

@@ -1,8 +1,8 @@
 <template>
   <main class="container my-4">
-    <div v-if="role" class="d-flex flex-wrap gap-4">
+    <div v-if="role && role.id !== 1" class="row g-4">
       <!-- Columna: Detalles del rol -->
-      <section class="flex-grow-1 flex-basis-100 flex-md-basis-45">
+      <section class="col-12 col-md-6">
         <h2 class="h5 mb-3 text-center text-md-start">Detalles del Rol</h2>
         <ul class="list-group mb-3">
           <li class="list-group-item">ID: {{ role.id }}</li>
@@ -18,9 +18,9 @@
 
         <div class="text-end">
           <button
-            v-if="role.id !== 1 && role.id !== 2"
+            v-if="role.id !== 2"
             class="btn btn-sm btn-danger"
-            @click="deleteRole(role.id)"
+            @click="openDeleteModal(role.id)"
           >
             <i class="fas fa-trash"></i>
             <span class="d-none d-md-inline ms-2">Eliminar</span>
@@ -29,7 +29,7 @@
       </section>
 
       <!-- Columna: Permisos -->
-      <section class="flex-grow-1 flex-basis-100 flex-md-basis-50">
+      <section class="col-12 col-md-6">
         <h2 class="h5 mb-3 text-center text-md-start">Permisos</h2>
         <div class="permissions-grid-container p-2 border rounded">
           <PermissionList
@@ -91,12 +91,37 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Confirmación de Eliminación -->
+    <div class="modal fade" ref="deleteModal" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">¿Eliminar rol?</h5>
+            <button type="button" class="btn-close" @click="closeDeleteModal"></button>
+          </div>
+          <div class="modal-body">
+            <p>¿Estás seguro de que deseas eliminar este rol? Esta acción no se puede deshacer.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" @click="closeDeleteModal">
+              <i class="fa-solid fa-xmark"></i>
+              <span class="ms-2">Cancelar</span>
+            </button>
+            <button type="button" class="btn btn-danger" @click="confirmDelete">
+              <i class="fa-solid fa-trash"></i>
+              <span class="ms-2">Eliminar</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
 <style scoped>
 .permissions-grid-container {
-  max-height: 600px;
+  max-height: 520px;
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -117,6 +142,9 @@ export default {
       roleid: null,
       role: null,
       roleToEdit: { id: null, name: '' },
+      deleteModalInstance: null,
+      roleIdToDelete: null,
+
       isEditingRole: false,
       allPermissions: [],
       rolePermissions: [],
@@ -134,6 +162,9 @@ export default {
       try {
         const response = await makeQuery(`/roles/${roleId}`, 'GET')
         this.role = response.data[0]
+        if (this.role.id === 1) {
+          this.$router.push('/settings')
+        }
       } catch (error) {
         console.error('Error fetching role:', error)
         if (error.response?.status === 404) {
@@ -196,14 +227,6 @@ export default {
       this.closeRoleModal()
       await this.fetchRole()
     },
-    async deleteRole(roleId) {
-      try {
-        await makeQuery(`/roles/${roleId}`, 'DELETE')
-        this.$router.push('/settings')
-      } catch (error) {
-        console.error('Error al eliminar el rol:', error)
-      }
-    },
 
     async grantPermission(id) {
       try {
@@ -225,6 +248,23 @@ export default {
         console.log('Permiso revocado:', id)
       } catch (error) {
         console.error('Error al revocar permiso:', id, error)
+      }
+    },
+    openDeleteModal(roleId) {
+      this.roleIdToDelete = roleId
+      this.deleteModalInstance = new Modal(this.$refs.deleteModal)
+      this.deleteModalInstance.show()
+    },
+    closeDeleteModal() {
+      if (this.deleteModalInstance) this.deleteModalInstance.hide()
+    },
+    async confirmDelete() {
+      try {
+        await makeQuery(`/roles/${this.roleIdToDelete}`, 'DELETE')
+        this.closeDeleteModal()
+        this.$router.push('/settings')
+      } catch (error) {
+        console.error('Error al eliminar el rol:', error)
       }
     },
   },
