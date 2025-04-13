@@ -150,4 +150,27 @@ class User
             throw new Exception("Error al obtener el usuario: " . $e->getMessage());
         }
     }
+
+    //Get users list by rol
+    public static function GetByRol($rol)
+    {
+        try {
+            $db = Database::getInstance();
+            $connection = $db->getConnection();
+            $query = "SELECT * FROM users WHERE rol = :rol";
+            $stmt = $connection->prepare($query);
+            $stmt->bindParam(':rol', $rol);
+            $stmt->execute();
+            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $result = [];
+            foreach ($users as $user) {
+                $userModel = new self($user['id'], $user['name'], $user['username'], null, $user['phone'], $user['rol'], $user['is_active']);
+                unset($userModel->password);
+                $result[] = $userModel;
+            }
+            return $result;
+        } catch (PDOException $e) {
+            throw new Exception("Error al obtener los usuarios: " . $e->getMessage());
+        }
+    }
 }

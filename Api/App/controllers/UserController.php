@@ -242,7 +242,8 @@ class UserController
         $this->success([$user], 'User registered', 201);
     }
 
-    public function Profile(){
+    public function Profile()
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -255,6 +256,28 @@ class UserController
             $this->success([$user], 'User found', 200);
         } else {
             $this->failed(null, 'User not found', 404);
+        }
+    }
+
+    //Get users by rol
+    public function GetByRol($id)
+    {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
+
+        $rol = Rol::Get($id);
+        if (!$rol) {
+            $this->failed(null, 'Rol not found', 404);
+            return;
+        }
+        $users = User::GetByRol($rol->id);
+        if ($users) {
+            $this->success($users, 'Users list', 200);
+        } else {
+            $this->failed(null, 'Users not found', 404);
         }
     }
 }

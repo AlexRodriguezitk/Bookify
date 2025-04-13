@@ -5,73 +5,116 @@
     <h4>Configuración del Sistema</h4>
     <p>A continuación podra editar los parametros esenciales del sistema.</p>
     <br />
-    <div class="row g-4">
-      <!-- Roles Card -->
-      <div class="col-lg-4 col-md-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="card-title mb-0">Roles</h5>
-              <!-- Roles -->
-              <button class="btn btn-success btn-sm" @click="openAddRoleModal">
-                <i class="fas fa-plus"></i>
-                <span class="d-none d-sm-inline ms-2">Añadir Rol</span>
-              </button>
-            </div>
-            <RoleC
-              :roles="roles"
-              @edit-role="openEditRoleModal"
-              @delete-role="deleteRole"
-              class="mb-3"
-            />
-          </div>
-        </div>
-      </div>
+    <div>
+      <ul class="nav nav-tabs" id="configTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="roles-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#roles"
+            type="button"
+            role="tab"
+            aria-controls="roles"
+            aria-selected="true"
+          >
+            Roles
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="categories-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#categories"
+            type="button"
+            role="tab"
+            aria-controls="categories"
+            aria-selected="false"
+          >
+            Categorias
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="terminals-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#terminals"
+            type="button"
+            role="tab"
+            aria-controls="terminals"
+            aria-selected="false"
+          >
+            Terminals
+          </button>
+        </li>
+      </ul>
+      <div class="tab-content" id="configTabsContent">
+        <div
+          class="tab-pane fade show active"
+          id="roles"
+          role="tabpanel"
+          aria-labelledby="roles-tab"
+        >
+          <div class="card shadow-sm h-100 mt-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0 me-auto">Roles</h5>
+                <button class="btn btn-success btn-sm me-2" @click="openAddRoleModal">
+                  <i class="fas fa-plus"></i>
+                  <span class="d-none d-sm-inline ms-2">Añadir Rol</span>
+                </button>
+              </div>
 
-      <!-- Categories Card -->
-      <div class="col-lg-4 col-md-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="card-title mb-0">Categories</h5>
-              <!-- Categories -->
-              <button class="btn btn-success btn-sm" @click="openAddCategoryModal">
-                <i class="fas fa-plus"></i>
-                <span class="d-none d-sm-inline ms-2">Añadir Categoría</span>
-              </button>
+              <RoleC
+                :roles="roles"
+                @edit-role="openEditRoleModal"
+                @delete-role="deleteRole"
+                class="mb-3"
+              />
             </div>
-            <CategoriesC
-              :categories="categories"
-              @edit-category="openEditCategoryModal"
-              @delete-category="deleteCategory"
-              class="mb-3"
-            />
+          </div>
+        </div>
+        <div class="tab-pane fade" id="categories" role="tabpanel" aria-labelledby="categories-tab">
+          <div class="card shadow-sm h-100 mt-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">Categorias</h5>
+                <button class="btn btn-success btn-sm" @click="openAddCategoryModal">
+                  <i class="fas fa-plus"></i>
+                  <span class="d-none d-sm-inline ms-2">Añadir Categoría</span>
+                </button>
+              </div>
+              <CategoriesC
+                :categories="categories"
+                @edit-category="openEditCategoryModal"
+                @delete-category="deleteCategory"
+                class="mb-3"
+              />
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="terminals" role="tabpanel" aria-labelledby="terminals-tab">
+          <div class="card shadow-sm h-100 mt-3">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">Terminals</h5>
+                <button class="btn btn-success btn-sm" @click="openAddTerminalModal">
+                  <i class="fas fa-plus"></i>
+                  <span class="d-none d-sm-inline ms-2">Añadir Terminal</span>
+                </button>
+              </div>
+              <TerminalsC
+                :terminals="terminals"
+                @edit-terminal="openEditTerminalModal"
+                @delete-terminal="deleteTerminal"
+                class="mb-3"
+              />
+            </div>
           </div>
         </div>
       </div>
-
-      <!-- Terminals Card -->
-      <div class="col-lg-4 col-md-6">
-        <div class="card shadow-sm h-100">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="card-title mb-0">Terminals</h5>
-              <!-- Terminals -->
-              <button class="btn btn-success btn-sm" @click="openAddTerminalModal">
-                <i class="fas fa-plus"></i>
-                <span class="d-none d-sm-inline ms-2">Añadir Terminal</span>
-              </button>
-            </div>
-            <TerminalsC
-              :terminals="terminals"
-              @edit-terminal="openEditTerminalModal"
-              @delete-terminal="deleteTerminal"
-              class="mb-3"
-            />
-          </div>
-        </div>
-      </div>
-      <hr class="my-4" />
     </div>
 
     <!-- Role Modal -->

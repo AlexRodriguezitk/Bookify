@@ -26,6 +26,11 @@
             <span class="d-none d-md-inline ms-2">Eliminar</span>
           </button>
         </div>
+
+        <h2 class="h5 mb-3 text-center text-md-start">Usuarios con este rol</h2>
+        <div class="user-grid-container p-2 border rounded">
+          <UserList :users="UserList" class="mb-3" />
+        </div>
       </section>
 
       <!-- Columna: Permisos -->
@@ -125,17 +130,24 @@
   overflow-y: auto;
   overflow-x: hidden;
 }
+.user-grid-container {
+  max-height: 340px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 </style>
 
 <script>
 import { makeQuery } from '@/services/api'
 import { Modal } from 'bootstrap'
 import Permissions from '@/services/permissions'
+import UserList from '@/components/SettingsComponents/UserListC.vue'
 import PermissionList from '@/components/SettingsComponents/PermissionListC.vue'
 export default {
   name: 'RoleView',
   components: {
     PermissionList,
+    UserList,
   },
   data() {
     return {
@@ -144,7 +156,7 @@ export default {
       roleToEdit: { id: null, name: '' },
       deleteModalInstance: null,
       roleIdToDelete: null,
-
+      UserList: [],
       isEditingRole: false,
       allPermissions: [],
       rolePermissions: [],
@@ -155,6 +167,7 @@ export default {
     this.fetchRole()
     this.fetchAllPermissions()
     this.fetchRolePermissions()
+    this.fetchUsers()
   },
   methods: {
     async fetchRole() {
@@ -170,6 +183,16 @@ export default {
         if (error.response?.status === 404) {
           this.$router.push('/settings')
         }
+      }
+    },
+
+    async fetchUsers() {
+      const roleId = this.$route.params.id
+      try {
+        const response = await makeQuery(`/roles/users/${roleId}`, 'GET')
+        this.UserList = response.data
+      } catch (error) {
+        console.error('Error fetching users:', error)
       }
     },
 
