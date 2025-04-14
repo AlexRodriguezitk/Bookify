@@ -125,7 +125,10 @@ class CT_Fields
             $stmt = $connection->prepare($query);
             $stmt->bindParam(':category', $category);
             $stmt->execute();
-            $custom_ticket_fields = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $custom_ticket_fields = array();
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $custom_ticket_fields[] = new CT_Fields($row['id'], $row['category_id'], $row['custom_field'], $row['enum_type']);
+            }
             return $custom_ticket_fields;
         } catch (PDOException $e) {
             throw new Exception("Error al obtener los campos personalizados de la categoria: " . $e->getMessage());

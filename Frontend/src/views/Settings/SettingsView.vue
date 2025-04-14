@@ -32,7 +32,7 @@
             aria-controls="categories"
             aria-selected="false"
           >
-            Categorias
+            Categorías
           </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -80,7 +80,7 @@
           <div class="card shadow-sm h-100 mt-3">
             <div class="card-body">
               <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="card-title mb-0">Categorias</h5>
+                <h5 class="card-title mb-0">Categorías</h5>
                 <button class="btn btn-success btn-sm" @click="openAddCategoryModal">
                   <i class="fas fa-plus"></i>
                   <span class="d-none d-sm-inline ms-2">Añadir Categoría</span>

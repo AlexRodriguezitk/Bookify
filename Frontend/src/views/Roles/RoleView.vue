@@ -58,9 +58,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title">
-              {{ isEditingRole ? 'Editar rol' : 'Añadir rol' }}
-            </h5>
+            <h5 class="modal-title">Editar rol</h5>
             <button type="button" class="btn-close" @click="closeRoleModal"></button>
           </div>
           <div class="modal-body">
@@ -157,7 +155,6 @@ export default {
       deleteModalInstance: null,
       roleIdToDelete: null,
       UserList: [],
-      isEditingRole: false,
       allPermissions: [],
       rolePermissions: [],
       modalRoleInstance: null,

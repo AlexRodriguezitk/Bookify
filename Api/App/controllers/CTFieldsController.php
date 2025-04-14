@@ -101,7 +101,7 @@ class CTFieldsController
         }
         $field = CT_Fields::get($id);
         if ($field) {
-            CT_Fields::delete($field);
+            CT_Fields::delete($id);
             $this->saveLog($AuthUser->id, 'FIELD_DELETED', 'FIELD WAS DELETED SUCCESSFULLY: ' . $field->name);
             $this->success([null], 'Field deleted', 200);
         } else {

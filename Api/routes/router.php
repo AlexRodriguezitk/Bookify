@@ -74,6 +74,12 @@ Flight::route('POST /categories', [new CategoryController(), 'store']);
 Flight::route('PUT /categories/@id', [new CategoryController(), 'update']);
 Flight::route('DELETE /categories/@id', [new CategoryController(), 'destroy']);
 
+Flight::route('GET /fields', [new CTFieldsController(), 'index']);
+Flight::route('GET /fields/@id', [new CTFieldsController(), 'show']);
+Flight::route('POST /fields', [new CTFieldsController(), 'store']);
+Flight::route('PUT /fields/@id', [new CTFieldsController(), 'update']);
+Flight::route('DELETE /fields/@id', [new CTFieldsController(), 'destroy']);
+Flight::route('GET /fields/category/@id', [new CTFieldsController(), 'getFieldsByCategory']);
 //Tickets
 //Grupo
 Flight::group('/tickets', function () {
@@ -83,7 +89,7 @@ Flight::group('/tickets', function () {
     Flight::route('POST /fields', [new CTFieldsController(), 'store']);
     Flight::route('PUT /fields/@id', [new CTFieldsController(), 'update']);
     Flight::route('DELETE /fields/@id', [new CTFieldsController(), 'destroy']);
-    Flight::route('GET /fields/category/@id', [new CTFieldsController(), 'getFieldsByCategory']);
+
 
     //Interactions
     Flight::route('GET /interactions', [new InteractionController(), 'index']);
