@@ -23,8 +23,40 @@ class UserController
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
-        $users = User::getAll();
-        $this->success($users, 'Users list', 200);
+
+        $has_pagination = isset($_GET['page']) && isset($_GET['limit']);
+
+        if ($has_pagination) {
+            $page = (int) ($_GET['page'] ?? 1);
+            $limit = (int) ($_GET['limit'] ?? 10);
+            $offset = ($page - 1) * intval($limit);
+            $total_pages = ceil(User::count() / $limit);
+
+            if ($page > $total_pages) {
+                $this->failed(null, 'Page not found', 404);
+                return;
+            }
+
+            $users = User::getPaginated($limit, $offset);
+            foreach ($users as &$user) {
+                $user['rol'] = Rol::Get($user['rol']);  // Acceder como array
+            }
+
+
+
+            $total = User::count();
+
+            $this->success([
+                'users' => $users,
+                'total' => $total,
+                'page' => $page,
+                'limit' => $limit,
+                'total_pages' => $total_pages,
+            ], 'Users list s', 200);
+        } else {
+            $users = User::getAll();
+            $this->success($users, 'Users list', 200);
+        }
     }
 
     public function show($id)
@@ -142,7 +174,7 @@ class UserController
         $user = User::get($id);
         if ($user) {
             if ($user->id == $AuthUser->id) {
-                $this->failed(null, 'You can inactive your own user', 200);
+                $this->failed(null, 'You can inactive your own user', 403);
             } else {
                 $user->is_active = 0;
                 $user = User::update($user);
@@ -171,7 +203,7 @@ class UserController
             }
         }
         $user = User::getByUsername($data['username']);
-        if ($user && password_verify($data['password'], $user->password) && $user->is_active) {
+        if ($user && password_verify($data['password'], $user->password) && $user->is_active == 1) {
             $token = \App\Auth::generateToken($user->id, $user->rol);
             //Set Flight::set('user', $user);
             Flight::set('user', $user);
@@ -201,6 +233,10 @@ class UserController
         $user = User::Get($decoded->id);
         if (!$user) {
             $this->failed(null, 'User not found', 404);
+            return;
+        }
+        if ($user->is_active == 0) {
+            $this->failed(null, 'User is inactive', 401);
             return;
         }
 

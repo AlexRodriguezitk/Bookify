@@ -42,7 +42,7 @@ Flight::route('PUT /users/@id', [new UserController(), 'update']);
 Flight::route('GET /roles/users/@id', [new UserController(), 'GetByRol']);
 Flight::route('DELETE /users/@id', [new UserController(), 'destroy']);
 Flight::route('DELETE /users/@id/inactive', [new UserController(), 'inactive']);
-Flight::route('GET /users/@id/active', [new UserController(), 'active']);
+Flight::route('PUT /users/@id/active', [new UserController(), 'active']);
 Flight::route('GET /users/@id/worklogs', [new WorkLogController(), 'GetByUser']);
 Flight::route('GET /profile', [new UserController(), 'profile']);
 

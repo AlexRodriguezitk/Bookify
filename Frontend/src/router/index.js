@@ -15,6 +15,7 @@ import Ticket from '@/views/Dashboard/Tickets/TicketView.vue'
 import Settings from '@/views/Settings/SettingsView.vue'
 import Roles from '@/views/Roles/RoleView.vue'
 import Categories from '@/views/Categories/CategoriesView.vue'
+import Users from '@/views/Users/UsersView.vue'
 
 // Definir rutas
 const routes = [
@@ -59,6 +60,11 @@ const routes = [
         path: '/categories/:id',
         component: Categories,
         meta: { requiresPermission: 'CATEGORIES.VIEW' },
+      },
+      {
+        path: '/users',
+        component: Users,
+        meta: { requiresPermission: 'USERS.VIEW' },
       },
     ],
   },

@@ -51,6 +51,44 @@ class User
         }
     }
 
+    //Funcion para obtener todos los usuarios paginados
+    public static function getPaginated($limit, $offset)
+    {
+        try {
+            $db = Database::getInstance();
+            $connection = $db->getConnection();
+            $query = "SELECT * FROM users LIMIT :limit OFFSET :offset";
+            $stmt = $connection->prepare($query);
+            $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
+            $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+            $stmt->execute();
+            //Remove password from response
+            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($users as $key => $user) {
+                unset($users[$key]['password']);
+            }
+            return $users;
+        } catch (PDOException $e) {
+            throw new Exception("Error al obtener todos los usuarios: " . $e->getMessage());
+        }
+    }
+
+    //Contar todos los usuarios
+    public static function Count()
+    {
+        try {
+            $db = Database::getInstance();
+            $connection = $db->getConnection();
+            $query = "SELECT COUNT(*) as total FROM users";
+            $stmt = $connection->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'];
+        } catch (PDOException $e) {
+            throw new Exception("Error al contar los usuarios: " . $e->getMessage());
+        }
+    }
+
     //Funcion para obtener un usuario por id
     public static function Get($id)
     {
