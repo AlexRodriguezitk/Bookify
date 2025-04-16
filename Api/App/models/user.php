@@ -73,14 +73,52 @@ class User
         }
     }
 
-    //Contar todos los usuarios
-    public static function Count()
+
+    public static function getSearch($search, $limit = null, $offset = null)
     {
+
+        if ($limit) {
+            $query = "SELECT * FROM users WHERE name LIKE :search OR username LIKE :search OR phone LIKE :search LIMIT :limit OFFSET :offset";
+        } else {
+            $query = "SELECT * FROM users WHERE name LIKE :search OR username LIKE :search OR phone LIKE :search";
+        }
+
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = "SELECT COUNT(*) as total FROM users";
             $stmt = $connection->prepare($query);
+            if ($limit) {
+                $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+            }
+            $stmt->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
+            $stmt->execute();
+            //Remove password from response
+            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($users as $key => $user) {
+                unset($users[$key]['password']);
+            }
+            return $users;
+        } catch (PDOException $e) {
+            throw new Exception("Error al obtener todos los usuarios: " . $e->getMessage());
+        }
+    }
+
+    //Contar todos los usuarios
+    public static function Count($search = null)
+    {
+        if ($search != null) {
+            $query = "SELECT COUNT(*) as total FROM users WHERE name LIKE :search OR username LIKE :search OR phone LIKE :search";
+        } else {
+            $query = "SELECT COUNT(*) as total FROM users";
+        }
+        try {
+            $db = Database::getInstance();
+            $connection = $db->getConnection();
+            $stmt = $connection->prepare($query);
+            if ($search != null) {
+                $stmt->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
+            }
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             return $result['total'];

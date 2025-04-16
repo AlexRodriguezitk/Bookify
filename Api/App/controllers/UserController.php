@@ -25,26 +25,42 @@ class UserController
         }
 
         $has_pagination = isset($_GET['page']) && isset($_GET['limit']);
+        $has_search = isset($_GET['search']);
 
         if ($has_pagination) {
             $page = (int) ($_GET['page'] ?? 1);
             $limit = (int) ($_GET['limit'] ?? 10);
             $offset = ($page - 1) * intval($limit);
-            $total_pages = ceil(User::count() / $limit);
+
+
+
+
+            if (!$has_search) {
+                $users = User::getPaginated($limit, $offset);
+                $total = User::count();
+                $total_pages = ceil($total / $limit);
+            } else {
+                $search = $_GET['search'];
+                $users = User::getSearch($search, $limit, $offset);
+                $total = User::count($search);
+                $total_pages = ceil($total / $limit);
+            }
+            if (empty($users)) {
+                $this->failed([null], 'Users not found', 404);
+                return;
+            }
 
             if ($page > $total_pages) {
                 $this->failed(null, 'Page not found', 404);
                 return;
             }
-
-            $users = User::getPaginated($limit, $offset);
             foreach ($users as &$user) {
                 $user['rol'] = Rol::Get($user['rol']);  // Acceder como array
             }
 
 
 
-            $total = User::count();
+
 
             $this->success([
                 'users' => $users,
@@ -52,9 +68,21 @@ class UserController
                 'page' => $page,
                 'limit' => $limit,
                 'total_pages' => $total_pages,
-            ], 'Users list s', 200);
+            ], 'Users list', 200);
         } else {
-            $users = User::getAll();
+            if ($has_search) {
+                $search = $_GET['search'];
+                $users = User::getSearch($search);
+            } else {
+                $users = User::getAll();
+            }
+            if (empty($users)) {
+                $this->failed([null], 'Users not found', 404);
+                return;
+            }
+            foreach ($users as &$user) {
+                $user['rol'] = Rol::Get($user['rol']);  // Acceder como array
+            }
             $this->success($users, 'Users list', 200);
         }
     }
