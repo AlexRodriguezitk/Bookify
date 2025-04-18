@@ -16,6 +16,7 @@ import Settings from '@/views/Settings/SettingsView.vue'
 import Roles from '@/views/Roles/RoleView.vue'
 import Categories from '@/views/Categories/CategoriesView.vue'
 import Users from '@/views/Users/UsersView.vue'
+import User from '@/views/Users/UserView.vue'
 
 // Definir rutas
 const routes = [
@@ -54,17 +55,22 @@ const routes = [
       {
         path: '/roles/:id',
         component: Roles,
-        meta: { requiresPermission: 'ROLES.VIEW' },
+        meta: { requiresPermission: 'ROLE.READ' },
       },
       {
         path: '/categories/:id',
         component: Categories,
-        meta: { requiresPermission: 'CATEGORIES.VIEW' },
+        meta: { requiresPermission: 'CATEGORIES.READ' },
       },
       {
         path: '/users',
         component: Users,
         meta: { requiresPermission: 'USERS.VIEW' },
+      },
+      {
+        path: '/users/:id',
+        component: User,
+        meta: { requiresPermission: 'USERS.READ' },
       },
     ],
   },

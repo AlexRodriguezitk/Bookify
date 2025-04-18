@@ -20,7 +20,7 @@ class PermissionController
     public function index()
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSIONS.INDEX')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSION.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -31,7 +31,7 @@ class PermissionController
     public function show($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISIONS.SHOW')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISION.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -47,7 +47,7 @@ class PermissionController
     {
         //ChekPermissions
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSIONS.STORE')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSION.CREATE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -76,7 +76,7 @@ class PermissionController
     public function update($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSIONS.UPDATE')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSION.UPDATE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -96,7 +96,7 @@ class PermissionController
     public function destroy($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSIONS.DESTROY')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSION.DELETE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -112,7 +112,7 @@ class PermissionController
     public function getAssignments($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSIONS.GETASSIGNMENTS')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSION.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -133,7 +133,7 @@ class PermissionController
     public function assing($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSIONS.ASSING')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSION.ASSING')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -179,7 +179,7 @@ class PermissionController
     public function unassing($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSIONS.UNASSING')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PERMISSION.ASSING')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }

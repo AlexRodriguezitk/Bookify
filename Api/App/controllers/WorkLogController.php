@@ -21,7 +21,7 @@ class WorkLogController
     public function index()
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'WORKLOG.INDEX')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'WORKLOG.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -29,9 +29,10 @@ class WorkLogController
         $this->success($worklog, 'Worklog list', 200);
     }
 
-    public function show($id) {
+    public function show($id)
+    {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'WORKLOG.SHOW')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'WORKLOG.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -43,9 +44,10 @@ class WorkLogController
         }
     }
 
-    public function store() {
+    public function store()
+    {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'WORKLOG.STORE')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'WORKLOG.CREATE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -68,7 +70,7 @@ class WorkLogController
     }
 
     public function update($id)
-    {   
+    {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'WORKLOG.UPDATE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
@@ -93,7 +95,7 @@ class WorkLogController
     public function destroy($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'WORKLOG.DESTROY')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'WORKLOG.DELETE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -107,9 +109,10 @@ class WorkLogController
         }
     }
 
-    public function GetByTicket($id) {
+    public function GetByTicket($id)
+    {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'WORKLOG.GETBYTICKET')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'WORKLOG.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -123,9 +126,10 @@ class WorkLogController
         }
     }
 
-    public function GetByUser($id) {
+    public function GetByUser($id)
+    {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'WORKLOG.GETBYUSER')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'WORKLOG.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }

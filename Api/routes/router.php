@@ -15,6 +15,7 @@ use App\controllers\PermissionController;
 use App\controllers\STHistoryController;
 use App\controllers\WorkLogController;
 use App\controllers\UploadController;
+use App\Auth;
 
 
 use Flight;
@@ -31,6 +32,7 @@ Flight::group('/auth', function () {
     Flight::route('POST /login', [new UserController(), 'login']);
     Flight::route('GET /renew', [new UserController(), 'renew']);
     Flight::route('POST /register', [new UserController(), 'register']);
+    Flight::route('GET /generate', [new UserController(), 'GenPassword']);
 });
 
 //Rutas usuarios

@@ -20,7 +20,7 @@ class TerminalController
     public function index()
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.INDEX')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -31,7 +31,7 @@ class TerminalController
     public function show($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.SHOW')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -46,7 +46,7 @@ class TerminalController
     public function store()
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.STORE')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.CREATE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -97,7 +97,7 @@ class TerminalController
     public function destroy($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.DESTROY')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.DELETE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -115,7 +115,7 @@ class TerminalController
     public function getAssignments($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.GETASSIGNEMENTS')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -136,7 +136,7 @@ class TerminalController
     public function assing($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.ASSING')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.ASSIGN')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -176,7 +176,7 @@ class TerminalController
     public function unassing($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.UNASSING')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.ASSIGN')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }

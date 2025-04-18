@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- Botón hamburguesa para móviles -->
-    <button class="mobile-menu-btn d-md-none" @click="toggleMobileMenu">
+    <button class="mobile-menu-btn d-md-none" @click="toggleMobileMenu" v-show="!isOpenModal">
       <i class="fas fa-bars"></i>
     </button>
 
@@ -71,6 +71,7 @@ export default {
   data() {
     return {
       isMobileMenuOpen: false,
+      isOpenModal: false,
     }
   },
   methods: {
@@ -80,6 +81,20 @@ export default {
     closeMobileMenu() {
       this.isMobileMenuOpen = false
     },
+    handleModalOpen() {
+      this.isOpenModal = true
+    },
+    handleModalClose() {
+      this.isOpenModal = false
+    },
+  },
+  mounted() {
+    document.body.addEventListener('shown.bs.modal', this.handleModalOpen)
+    document.body.addEventListener('hidden.bs.modal', this.handleModalClose)
+  },
+  beforeUnmount() {
+    document.body.removeEventListener('shown.bs.modal', this.handleModalOpen)
+    document.body.removeEventListener('hidden.bs.modal', this.handleModalClose)
   },
 }
 </script>

@@ -26,6 +26,8 @@ const AuthService = {
       const { token } = response.data.data
       if (token) {
         Cookies.set('jwt', token, cookieOptions)
+        //Set user store
+
         //console.log('[Auth] Token guardado en cookie:', token)
       } else {
         //console.warn('[Auth] No se recibió token en la respuesta.')

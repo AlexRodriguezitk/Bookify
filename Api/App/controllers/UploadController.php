@@ -1,20 +1,21 @@
 <?php
 
 namespace App\controllers;
+
 use App\traits\ApiResponse;
 use App\traits\HasPermissions;
 
 use Flight;
 
 class UploadController
-{   
+{
     use ApiResponse;
     use HasPermissions;
 
     public function uploadFile()
-    {   
+    {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.INDEX')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }

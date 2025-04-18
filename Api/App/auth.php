@@ -1,12 +1,17 @@
 <?php
+
 namespace App;
+
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use Exception;
+use GrahamCampbell\ResultType\Success;
 
-class Auth {
-    public static function generateToken($userId, $role) {
+class Auth
+{
+    public static function generateToken($userId, $role)
+    {
         $payload = [
             'iat' => time(),
             'exp' => time() + $_ENV['JWT_EXPIRATION'],
@@ -16,7 +21,17 @@ class Auth {
         return JWT::encode($payload, $_ENV['JWT_SECRET'], $_ENV['JWT_ALGORITHM']);
     }
 
-    public static function validateToken($token) {
+    public static function GenPassword()
+    {
+        $specials = '!@#$%';
+        $pass = array(); //remember to declare $pass as an array
+        $pass = array_merge(range('a', 'z'), range('A', 'Z'), range(0, 9), str_split($specials));
+        shuffle($pass);
+        $pass = array_slice($pass, 0, 12);
+        return implode($pass);
+    }
+    public static function validateToken($token)
+    {
         try {
             $decoded = JWT::decode($token, new Key($_ENV['JWT_SECRET'], $_ENV['JWT_ALGORITHM']));
             $decoded->id = $decoded->sub;
@@ -26,14 +41,16 @@ class Auth {
         }
     }
 
-    public static function requireRole($role) {
+    public static function requireRole($role)
+    {
         $user = \Flight::get('user');
         if (!$user || $user->role !== $role) {
             \Flight::halt(403, json_encode(['error' => 'Acceso denegado']));
         }
     }
 
-    public static function requireAuth() {
+    public static function requireAuth()
+    {
         $headers = getallheaders();
         if (!isset($headers['Authorization'])) {
             \Flight::halt(401, json_encode(['error' => 'Token no proporcionado']));

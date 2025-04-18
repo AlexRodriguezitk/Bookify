@@ -19,7 +19,7 @@ class UserController
     public function index()
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.INDEX')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -27,70 +27,45 @@ class UserController
         $has_pagination = isset($_GET['page']) && isset($_GET['limit']);
         $has_search = isset($_GET['search']);
 
+
         if ($has_pagination) {
-            $page = (int) ($_GET['page'] ?? 1);
-            $limit = (int) ($_GET['limit'] ?? 10);
-            $offset = ($page - 1) * intval($limit);
+            $page = $_GET['page'];
+            $limit = $_GET['limit'];
 
+            $offset = ($page - 1) * $limit;
 
-
-
-            if (!$has_search) {
-                $users = User::getPaginated($limit, $offset);
-                $total = User::count();
-                $total_pages = ceil($total / $limit);
-            } else {
-                $search = $_GET['search'];
-                $users = User::getSearch($search, $limit, $offset);
-                $total = User::count($search);
-                $total_pages = ceil($total / $limit);
-            }
-            if (empty($users)) {
-                $this->failed([null], 'Users not found', 404);
-                return;
-            }
-
-            if ($page > $total_pages) {
-                $this->failed(null, 'Page not found', 404);
-                return;
-            }
-            foreach ($users as &$user) {
-                $user['rol'] = Rol::Get($user['rol']);  // Acceder como array
-            }
-
-
-
-
-
-            $this->success([
-                'users' => $users,
-                'total' => $total,
-                'page' => $page,
-                'limit' => $limit,
-                'total_pages' => $total_pages,
-            ], 'Users list', 200);
-        } else {
             if ($has_search) {
                 $search = $_GET['search'];
-                $users = User::getSearch($search);
+                $total = User::Count($search);
+                $pages = ceil($total / $limit);
+                $users = User::getSearch($search, $limit, $offset);
             } else {
-                $users = User::getAll();
+                $total = User::Count();
+                $pages = ceil($total / $limit);
+                $users = User::GetAll($limit, $offset);
             }
             if (empty($users)) {
-                $this->failed([null], 'Users not found', 404);
+                $this->failed(null, 'Users not found', 404);
                 return;
             }
-            foreach ($users as &$user) {
-                $user['rol'] = Rol::Get($user['rol']);  // Acceder como array
+
+            foreach ($users as $key => $user) {
+                $userArray = (array) $user;
+                unset($userArray['password']);
+                $userArray['rol'] = Rol::get($userArray['rol']);
+                $users[$key] = (object) $userArray;
             }
-            $this->success($users, 'Users list', 200);
+
+            $this->success(['users' => $users, 'pagination' => ['page' => $page, 'limit' => $limit, 'total' => $total, 'total_pages' => $pages]], 'Users found', 200);
+        } else {
+            $users = User::GetAll();
         }
     }
 
     public function show($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.SHOW')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -107,7 +82,7 @@ class UserController
     {
         //ChekPermissions
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.STORE')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.CREATE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -143,6 +118,11 @@ class UserController
         }
         $data = Flight::request()->data->getData();
         $user = User::get($id);
+
+        if ($user->id == $AuthUser->id && $data['rol'] != $user->rol) {
+            $this->failed(null, 'You cannot change your own role', 403);
+            return;
+        }
         if ($user) {
             $user->name = $data['name'] ?? $user->name;
             $user->username = $data['username'] ?? $user->username;
@@ -160,8 +140,12 @@ class UserController
     public function destroy($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.DESTROY')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.DELETE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
+        if ($AuthUser->id == $id) {
+            $this->failed(null, 'You cannot delete yourself', 403);
             return;
         }
         $user = User::get($id);
@@ -177,7 +161,7 @@ class UserController
     public function Active($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.ACTIVE')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.ACTIVATE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -195,7 +179,7 @@ class UserController
     public function Inactive($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.INACTIVE')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.ACTIVATE')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -237,7 +221,7 @@ class UserController
             Flight::set('user', $user);
             $this->saveLog($user->id, 'USER_LOGIN', 'USER WAS LOGGED IN SUCCESSFULLY: ' . $user->name);
             $this->setJwtBearerToken($token);
-            $this->success(['token' => $token], 'Login successful', 200);
+            $this->success(['token' => $token, 'user' => $user], 'Login successful', 200);
         } else {
             $this->failed(null, 'Invalid credentials', 401);
         }
@@ -309,7 +293,7 @@ class UserController
     public function Profile()
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PROFILE.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -327,7 +311,7 @@ class UserController
     public function GetByRol($id)
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.READ')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
@@ -343,5 +327,11 @@ class UserController
         } else {
             $this->failed(null, 'Users not found', 404);
         }
+    }
+
+    public function GenPassword()
+    {
+        $password = \App\Auth::GenPassword();
+        $this->success([$password], 'Password generated', 200);
     }
 }

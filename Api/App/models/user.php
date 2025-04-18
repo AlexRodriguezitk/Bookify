@@ -32,57 +32,10 @@ class User
 
     //Funciones
     //Funcion para obtener todos los usuarios
-    public static function GetAll()
+    public static function GetAll($limit = null, $offset = 0)
     {
-        try {
-            $db = Database::getInstance();
-            $connection = $db->getConnection();
-            $query = "SELECT * FROM users";
-            $stmt = $connection->prepare($query);
-            $stmt->execute();
-            //Remove password from response
-            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            foreach ($users as $key => $user) {
-                unset($users[$key]['password']);
-            }
-            return $users;
-        } catch (PDOException $e) {
-            throw new Exception("Error al obtener todos los usuarios: " . $e->getMessage());
-        }
-    }
-
-    //Funcion para obtener todos los usuarios paginados
-    public static function getPaginated($limit, $offset)
-    {
-        try {
-            $db = Database::getInstance();
-            $connection = $db->getConnection();
-            $query = "SELECT * FROM users LIMIT :limit OFFSET :offset";
-            $stmt = $connection->prepare($query);
-            $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
-            $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
-            $stmt->execute();
-            //Remove password from response
-            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            foreach ($users as $key => $user) {
-                unset($users[$key]['password']);
-            }
-            return $users;
-        } catch (PDOException $e) {
-            throw new Exception("Error al obtener todos los usuarios: " . $e->getMessage());
-        }
-    }
-
-
-    public static function getSearch($search, $limit = null, $offset = null)
-    {
-
-        if ($limit) {
-            $query = "SELECT * FROM users WHERE name LIKE :search OR username LIKE :search OR phone LIKE :search LIMIT :limit OFFSET :offset";
-        } else {
-            $query = "SELECT * FROM users WHERE name LIKE :search OR username LIKE :search OR phone LIKE :search";
-        }
-
+        $query = "SELECT * FROM users";
+        $query = $limit ? $query . " LIMIT :limit OFFSET :offset" : $query;
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
@@ -91,7 +44,6 @@ class User
                 $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
                 $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
             }
-            $stmt->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
             $stmt->execute();
             //Remove password from response
             $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -101,6 +53,48 @@ class User
             return $users;
         } catch (PDOException $e) {
             throw new Exception("Error al obtener todos los usuarios: " . $e->getMessage());
+        }
+    }
+
+
+    public static function getSearch($search, $limit = null, $offset = 0)
+    {
+        $terms = array_filter(explode(' ', $search)); // Divide y elimina vacíos
+        if (empty($terms)) return [];
+
+        // Construye condiciones dinámicas
+        $conditions = [];
+        foreach ($terms as $i => $term) {
+            $conditions[] = "(name LIKE :term$i OR username LIKE :term$i OR phone LIKE :term$i)";
+        }
+        $whereClause = implode(" AND ", $conditions); // AND para que cumpla todos los términos
+
+        $query = "SELECT * FROM users WHERE $whereClause";
+        if ($limit !== null) {
+            $query .= " LIMIT :limit OFFSET :offset";
+        }
+
+        try {
+            $db = Database::getInstance();
+            $connection = $db->getConnection();
+            $stmt = $connection->prepare($query);
+
+            // Bind de los términos
+            foreach ($terms as $i => $term) {
+                $stmt->bindValue(":term$i", '%' . $term . '%', PDO::PARAM_STR);
+            }
+
+            if ($limit !== null) {
+                $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+            }
+
+            $stmt->execute();
+            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            return $users;
+        } catch (PDOException $e) {
+            throw new Exception("Error al obtener los usuarios: " . $e->getMessage());
         }
     }
 
