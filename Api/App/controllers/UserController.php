@@ -221,6 +221,8 @@ class UserController
             Flight::set('user', $user);
             $this->saveLog($user->id, 'USER_LOGIN', 'USER WAS LOGGED IN SUCCESSFULLY: ' . $user->name);
             $this->setJwtBearerToken($token);
+            $rol = Rol::Get($user->rol);
+            $user->rol = $rol;
             $this->success(['token' => $token, 'user' => $user], 'Login successful', 200);
         } else {
             $this->failed(null, 'Invalid credentials', 401);
@@ -253,8 +255,10 @@ class UserController
         }
 
         $newToken = \App\Auth::generateToken($user->id, $user->rol);
+        $rol = Rol::Get($user->rol);
+        $user->rol = $rol;
         $this->setJwtBearerToken($newToken);
-        $this->success(['token' => $newToken], 'Token renewed successfully', 200);
+        $this->success(['token' => $newToken, 'user' => $user], 'Token renewed successfully', 200);
     }
 
 
@@ -286,6 +290,8 @@ class UserController
         //Loging and return JWT
         $token = \App\Auth::generateToken($user->id, $user->rol);
         $this->setJwtBearerToken($token);
+        $rol = Rol::Get($user->rol);
+        $user->rol = $rol;
         $this->saveLog($user->id, 'USER_REGISTERED', 'USER WAS REGISTERED SUCCESSFULLY: ' . $user->name);
         $this->success([$user], 'User registered', 201);
     }
@@ -333,5 +339,29 @@ class UserController
     {
         $password = \App\Auth::GenPassword();
         $this->success([$password], 'Password generated', 200);
+    }
+
+    public function change_image()
+    {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'PROFILE.UPDATE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
+        $data = Flight::request()->data->getData();
+        $user = User::get($AuthUser->id);
+        if (!$user) {
+            $this->failed(null, 'User not found', 404);
+            return;
+        }
+        if (empty($data['image'])) {
+            $this->failed(null, "Field 'image' is required", 400);
+            return;
+        }
+
+        $user->profile_image = $data['image'];
+        $user = User::update($user);
+
+        $this->success([$user], 'User updated', 200);
     }
 }

@@ -16,10 +16,12 @@ class User
     public $password;
     public $phone;
     public $rol;
+    public $profile_image;
+    public $created_at;
     public $is_active;
 
     //Constructor
-    public function __construct($id = null, $name = null, $username = null, $password = null, $phone = null, $rol = null, $is_active = true)
+    public function __construct($id = null, $name = null, $username = null, $password = null, $phone = null, $rol = null, $profile_image = null, $created_at = null, $is_active = null)
     {
         $this->id = $id;
         $this->name = $name;
@@ -27,6 +29,8 @@ class User
         $this->password = $password;
         $this->phone = $phone;
         $this->rol = $rol;
+        $this->profile_image = $profile_image;
+        $this->created_at = $created_at;
         $this->is_active = $is_active;
     }
 
@@ -133,7 +137,7 @@ class User
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($result) {
-                return new self($result['id'], $result['name'], $result['username'], $result['password'], $result['phone'], $result['rol'], $result['is_active']);
+                return new self($result['id'], $result['name'], $result['username'], $result['password'], $result['phone'], $result['rol'], $result['profile_image'], $result['created_at'], $result['is_active']);
             }
             return null;
         } catch (PDOException $e) {
@@ -169,13 +173,14 @@ class User
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = 'UPDATE users SET name = :name, username = :username, password = :password, phone = :phone, rol = :rol, is_active = :is_active WHERE id = :id';
+            $query = 'UPDATE users SET name = :name, username = :username, password = :password, phone = :phone, rol = :rol, profile_image = :profile_image ,is_active = :is_active WHERE id = :id';
             $stmt = $connection->prepare($query);
             $stmt->bindParam(':id', $user->id);
             $stmt->bindParam(':name', $user->name);
             $stmt->bindParam(':username', $user->username);
             $stmt->bindParam(':password', $user->password);
             $stmt->bindParam(':phone', $user->phone);
+            $stmt->bindParam(':profile_image', $user->profile_image);
             $stmt->bindParam(':rol', $user->rol);
             $stmt->bindParam(':is_active', $user->is_active);
             $stmt->execute();
@@ -213,7 +218,7 @@ class User
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($result) {
-                return new self($result['id'], $result['name'], $result['username'], $result['password'], $result['phone'], $result['rol'], $result['is_active']);
+                return new self($result['id'], $result['name'], $result['username'], $result['password'], $result['phone'], $result['rol'], $result['profile_image'], $result['created_at'], $result['is_active']);
             }
             return null;
         } catch (PDOException $e) {
@@ -234,7 +239,7 @@ class User
             $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $result = [];
             foreach ($users as $user) {
-                $userModel = new self($user['id'], $user['name'], $user['username'], null, $user['phone'], $user['rol'], $user['is_active']);
+                $userModel = new self($user['id'], $user['name'], $user['username'], null, $user['phone'], $user['rol'], $user['profile_image'], $user['created_at'], $user['is_active']);
                 unset($userModel->password);
                 $result[] = $userModel;
             }

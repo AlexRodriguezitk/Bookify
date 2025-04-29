@@ -190,7 +190,10 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL,
   `phone` varchar(15) NOT NULL,
   `rol` int(11) DEFAULT 2 NULL,
+  `profile_image` varchar(255) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),	
   `is_active` tinyint(1) DEFAULT 1
+  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------

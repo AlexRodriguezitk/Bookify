@@ -221,12 +221,11 @@
                   v-model="terminalToEdit.terminal_ext"
                   class="form-control"
                   :class="{
-                    'is-invalid': terminalToEdit.terminal_ext.length > 15,
+                    'is-invalid': terminalToEdit.terminal_ext.length > 20,
                   }"
-                  :disabled="isEditingTerminal"
                   type="text"
                   placeholder="Ingrese la extensión de la terminal"
-                  maxlength="15"
+                  maxlength="20"
                   required
                 />
               </div>

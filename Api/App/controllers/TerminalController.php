@@ -133,32 +133,16 @@ class TerminalController
     }
 
     //Func Asing Terminal $terminal::Assing($terminal, $asesor) 
-    public function assing($id)
+    public function assing($terminal_id, $user_id)
     {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.ASSIGN')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
-        $data = Flight::request()->data->getData();
-        if (empty($data)) {
-            $this->failed(null, "No data provided", 400);
-            return;
-        }
-        try {
-            $requiredFields = ['asesor'];
-            foreach ($requiredFields as $field) {
-                if (empty($data[$field])) {
-                    $this->failed(null, "Field '$field' is required", 400);
-                    return;
-                }
-            }
-        } catch (Exception $e) {
-            $this->failed(null, "Field '$field' is required", 400);
-            return;
-        }
-        $terminal = Terminal::get($id);
-        $asesor = User::get($data['asesor']);
+
+        $terminal = Terminal::get($terminal_id);
+        $asesor = User::get($user_id);
         if ($terminal && $asesor) {
             try {
                 $message = Terminal::Assign($terminal, $asesor);
@@ -173,32 +157,16 @@ class TerminalController
     }
 
     //FUncion para desasignar terminal
-    public function unassing($id)
+    public function unassing($terminal_id, $user_id)
     {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TERMINAL.ASSIGN')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
-        $data = Flight::request()->data->getData();
-        if (empty($data)) {
-            $this->failed(null, "No data provided", 400);
-            return;
-        }
-        try {
-            $requiredFields = ['asesor'];
-            foreach ($requiredFields as $field) {
-                if (empty($data[$field])) {
-                    $this->failed(null, "Field '$field' is required", 400);
-                    return;
-                }
-            }
-        } catch (Exception $e) {
-            $this->failed(null, "Field '$field' is required", 400);
-            return;
-        }
-        $terminal = Terminal::get($id);
-        $asesor = User::get($data['asesor']);
+
+        $terminal = Terminal::get($terminal_id);
+        $asesor = User::get($user_id);
         if ($terminal && $asesor) {
             $message = Terminal::Unassign($terminal, $asesor);
             $this->saveLog($AuthUser->id, 'TERMINAL_UNASSIGNED', 'TERMINAL WAS UNASSIGNED SUCCESSFULLY: TERMINAL{' . $terminal->terminal_ext . '} ASESOR{' . $asesor->name . '}');

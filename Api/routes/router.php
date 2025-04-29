@@ -47,6 +47,7 @@ Flight::route('DELETE /users/@id/inactive', [new UserController(), 'inactive']);
 Flight::route('PUT /users/@id/active', [new UserController(), 'active']);
 Flight::route('GET /users/@id/worklogs', [new WorkLogController(), 'GetByUser']);
 Flight::route('GET /profile', [new UserController(), 'profile']);
+Flight::route('POST /profile/image', [new UserController(), 'change_image']);
 
 
 
@@ -64,8 +65,8 @@ Flight::route('GET /terminals/@id', [new TerminalController(), 'show']);
 Flight::route('POST /terminals', [new TerminalController(), 'store']);
 Flight::route('PUT /terminals/@id', [new TerminalController(), 'update']);
 Flight::route('DELETE /terminals/@id', [new TerminalController(), 'destroy']);
-Flight::route('POST /terminals/assign/@id', [new TerminalController(), 'assing']);
-Flight::route('POST /terminals/unassign/@id', [new TerminalController(), 'unassing']);
+Flight::route('PUT /terminals/@terminal_id/assign/@user_id', [new TerminalController(), 'assing']);
+Flight::route('DELETE /terminals/@terminal_id/unassign/@user_id', [new TerminalController(), 'unassing']);
 Flight::route('GET /terminals/Assignments/@id', [new TerminalController(), 'getAssignments']);
 
 

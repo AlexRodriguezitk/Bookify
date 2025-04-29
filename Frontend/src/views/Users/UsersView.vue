@@ -1,7 +1,11 @@
 <template>
   <main class="container mt-3">
     <!-- Alerta flotante -->
-    <AlertC v-if="errorMessages" :message="errorMessages" color="danger" />
+    <AlertC
+      v-if="errorMessages"
+      :message="errorMessages"
+      :color="alertClass ? alertClass : 'danger'"
+    />
 
     <div class="d-flex align-items-center mb-3">
       <h1 class="mb-0 me-2 me-md-auto">Usuarios</h1>
@@ -130,24 +134,53 @@
 
               <div class="mb-3">
                 <label for="password" class="form-label">Contraseña</label>
-                <input
-                  id="password"
-                  v-model="newUser.password"
-                  class="form-control"
-                  type="password"
-                  placeholder="Ingrese la contraseña"
-                  autocomplete="new-password"
-                  required
-                />
+                <!--Imput group-->
+                <div class="input-group">
+                  <input
+                    id="password"
+                    ref="password"
+                    type="text"
+                    placeholder="Ingrese la contraseña"
+                    class="form-control"
+                    :class="{
+                      'is-valid':
+                        newUser.password !== '' &&
+                        newUser.password_confirmation !== '' &&
+                        newUser.password === newUser.password_confirmation,
+                      'is-invalid':
+                        newUser.password !== '' &&
+                        newUser.password_confirmation !== '' &&
+                        newUser.password !== newUser.password_confirmation,
+                    }"
+                    v-model="newUser.password"
+                    autocomplete="new-password"
+                    required
+                  />
+                  <!-- Generate Random Password -->
+                  <button class="btn btn-primary" @click="Generate" type="button">
+                    <i class="fas fa-key"></i>
+                  </button>
+                </div>
               </div>
 
               <div class="mb-3">
                 <label for="c-password" class="form-label">Confirmar contraseña</label>
                 <input
                   id="c-password"
+                  ref="cPassword"
                   v-model="newUser.password_confirmation"
                   class="form-control"
-                  type="password"
+                  :class="{
+                    'is-valid':
+                      newUser.password !== '' &&
+                      newUser.password_confirmation !== '' &&
+                      newUser.password === newUser.password_confirmation,
+                    'is-invalid':
+                      newUser.password !== '' &&
+                      newUser.password_confirmation !== '' &&
+                      newUser.password !== newUser.password_confirmation,
+                  }"
+                  type="text"
                   placeholder="Confirme la contraseña"
                   autocomplete="new-password"
                   required
@@ -243,6 +276,7 @@ export default {
       },
       search: null,
       errorMessages: null,
+      alertClass: null,
       searchInput: this.$route.query.search || '',
     }
   },
@@ -407,6 +441,20 @@ export default {
           search: this.searchInput.trim() || undefined,
         },
       })
+    },
+
+    async Generate() {
+      try {
+        const response = await makeQuery(`/auth/generate`, 'GET')
+        this.newUser.password = response.data[0]
+        this.newUser.password_confirmation = response.data[0]
+        this.errorMessages = 'Password generated successfully'
+        this.alertClass = 'success'
+      } catch (error) {
+        console.error('Error deleting user:', error)
+        this.errorMessages = error.response.data.message
+        this.alertClass = 'danger'
+      }
     },
   },
 
