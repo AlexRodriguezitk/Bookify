@@ -17,6 +17,7 @@ import Roles from '@/views/Roles/RoleView.vue'
 import Categories from '@/views/Categories/CategoriesView.vue'
 import Users from '@/views/Users/UsersView.vue'
 import User from '@/views/Users/UserView.vue'
+import Profile from '@/views/Dashboard/ProfileView.vue'
 
 // Definir rutas
 const routes = [
@@ -71,6 +72,11 @@ const routes = [
         path: '/users/:id',
         component: User,
         meta: { requiresPermission: 'USERS.READ' },
+      },
+      {
+        path: '/profile',
+        component: Profile,
+        meta: { requiresPermission: 'PROFILE.VIEW'},
       },
     ],
   },
