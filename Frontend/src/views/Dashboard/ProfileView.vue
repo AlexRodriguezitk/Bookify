@@ -14,6 +14,7 @@
     </div>
   </main>
 </template>
+
 <script>
 import { makeQuery } from '@/services/api'
 export default {
@@ -31,9 +32,7 @@ export default {
         const response = await makeQuery('/profile', 'GET')
         this.Profile = response.data[0]
         console.log(this.Profile)
-      } catch (error) {
-        console.error('Error fetching profile:', error)
-      }
+      } catch (error) {}
     },
   },
 }
