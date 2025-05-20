@@ -6,6 +6,7 @@ use App\traits\Log;
 use App\traits\ApiResponse;
 use App\traits\HasPermissions;
 use App\models\Interaction;
+use App\models\User;
 use Flight;
 
 class InteractionController
@@ -35,6 +36,7 @@ class InteractionController
         }
         $interaction = Interaction::get($id);
         if ($interaction) {
+            $interaction->user = User::get($interaction->user);
             $this->success([$interaction], 'Interaction found', 200);
         } else {
             $this->failed(null, 'Interaction not found', 404);
@@ -80,7 +82,7 @@ class InteractionController
         $interaction = Interaction::get($id);
         if ($interaction) {
             $interaction->id_ticket = $data['id_ticket'] ?? $interaction->id_ticket;
-            $interaction->id_user = $data['id_user'] ?? $interaction->id_user;
+            $interaction->user = $data['id_user'] ?? $interaction->user;
             $interaction->message = $data['message'] ?? $interaction->message;
             $interaction->type = $data['type'] ?? $interaction->type;
             $interaction = Interaction::update($interaction);
@@ -118,6 +120,9 @@ class InteractionController
         }
         $interactions = Interaction::getIntByTicket($id_ticket);
         if ($interactions) {
+            foreach ($interactions as $interaction) {
+                $interaction->user = User::get($interaction->user);
+            }
             $this->success($interactions, 'Interactions found', 200);
         } else {
             $this->failed(null, 'Interactions not found', 404);

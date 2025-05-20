@@ -12,17 +12,18 @@ class Interaction
 {
     public $id;
     public $id_ticket;
-    public $id_user;
+    public $user;
+
     public $message;
     public $interaction_date;
     public $type; // ENUM('internal', 'external')
 
     //Constructor
-    public function __construct($id = null, $id_ticket = null, $id_user = null, $message = null, $interaction_date = null, $type = null)
+    public function __construct($id = null, $id_ticket = null, $user = null, $message = null, $interaction_date = null, $type = null)
     {
         $this->id = $id;
         $this->id_ticket = $id_ticket;
-        $this->id_user = $id_user;
+        $this->user = $user;
         $this->message = $message;
         $this->interaction_date = $interaction_date;
         $this->type = $type;
@@ -131,7 +132,11 @@ class Interaction
             $stmt = $connection->prepare($query);
             $stmt->bindParam(':id_ticket', $id_ticket);
             $stmt->execute();
-            $interactions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $interactions = array();
+            foreach ($result as $row) {
+                $interactions[] = new Interaction($row['id'], $row['id_ticket'], $row['id_user'], $row['message'], $row['interaction_date'], $row['type']);
+            }
             return $interactions;
         } catch (PDOException $e) {
             throw new Exception("Error al obtener las interacciones del ticket: " . $e->getMessage());

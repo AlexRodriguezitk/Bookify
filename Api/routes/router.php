@@ -118,6 +118,7 @@ Flight::group('/tickets', function () {
 
     //Tickets
     Flight::route('GET /', [new TicketController(), 'index']);
+    Flight::route('GET /inbox', [new TicketController(), 'getMyTickets']);
     Flight::route('GET /@id', [new TicketController(), 'show']);
     Flight::route('POST /', [new TicketController(), 'store']);
     Flight::route('PUT /@id', [new TicketController(), 'update']);

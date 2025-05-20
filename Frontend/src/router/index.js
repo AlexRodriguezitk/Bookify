@@ -10,8 +10,8 @@ import Register from '@/views/Auth/RegisterView.vue'
 import Logout from '@/views/Auth/LogoutView.vue'
 import Install from '@/views/Setup/InstallView.vue'
 import Dashboard from '@/views/Dashboard/DashboardView.vue'
-import Inbox from '@/views/Dashboard/Tickets/InboxView.vue'
 import Ticket from '@/views/Dashboard/Tickets/TicketView.vue'
+import Tickets from '@/views/Dashboard/Tickets/TicketsView.vue'
 import Settings from '@/views/Settings/SettingsView.vue'
 import Roles from '@/views/Roles/RoleView.vue'
 import Categories from '@/views/Categories/CategoriesView.vue'
@@ -33,7 +33,7 @@ const routes = [
     children: [
       {
         path: '/tickets',
-        component: Ticket,
+        component: Tickets,
         meta: { requiresPermission: 'TICKET.INDEX' },
         children: [
           {
@@ -43,7 +43,7 @@ const routes = [
           },
           {
             path: ':id/',
-            component: Inbox,
+            component: Ticket,
             meta: { requiresPermission: 'TICKET.VIEW' },
           },
         ],
@@ -76,7 +76,7 @@ const routes = [
       {
         path: '/profile',
         component: Profile,
-        meta: { requiresPermission: 'PROFILE.VIEW'},
+        meta: { requiresPermission: 'PROFILE.VIEW' },
       },
     ],
   },

@@ -26,7 +26,30 @@ class TicketController
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }
-        $tickets = Ticket::getAll();
+
+        $has_pagination = isset($_GET['page']) && isset($_GET['limit']);
+
+
+        if ($has_pagination) {
+            $page = $_GET['page'];
+            $limit = $_GET['limit'];
+
+            $offset = ($page - 1) * $limit;
+
+            $total = Ticket::Count();
+            $pages = ceil($total / $limit);
+            $tickets = Ticket::GetAll($limit, $offset);
+
+            if (empty($tickets)) {
+                $this->failed(null, 'Tickets not found', 404);
+                return;
+            }
+            foreach ($tickets as $ticket) {
+                $ticket->asesor = User::get($ticket->asesor);
+                $ticket->client = User::get($ticket->client);
+            }
+        }
+
         $this->success($tickets, 'Tickets list', 200);
     }
 
@@ -202,6 +225,37 @@ class TicketController
         }
         $tickets = Ticket::getByAsesor($asesor);
         $this->success($tickets, 'Tickets list', 200);
+    }
+
+    public function getMyTickets()
+    {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.READ')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
+
+        $has_pagination = isset($_GET['page']) && isset($_GET['limit']);
+        if ($has_pagination) {
+            $page = $_GET['page'];
+            $limit = $_GET['limit'];
+            $offset = ($page - 1) * $limit;
+            $tickets = Ticket::getByAsesor($AuthUser->id, $limit, $offset);
+            $total = Ticket::CountByAsesor($AuthUser->id);
+            $pages = ceil($total / $limit);
+            foreach ($tickets as $ticket) {
+                $ticket->asesor = User::get($ticket->asesor);
+                $ticket->client = User::get($ticket->client);
+            }
+            $this->success(['tickets' => $tickets, 'pagination' => ['page' => $page, 'limit' => $limit, 'total' => $total, 'total_pages' => $pages]], 'Tickets list', 200);
+        } else {
+            $tickets = Ticket::getByAsesor($AuthUser->id);
+            foreach ($tickets as $ticket) {
+                $ticket->asesor = User::get($ticket->asesor);
+                $ticket->client = User::get($ticket->client);
+            }
+            $this->success(['tickets' => $tickets], 'Tickets list', 200);
+        }
     }
 
     public function getByClient($client)
