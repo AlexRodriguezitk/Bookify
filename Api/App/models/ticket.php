@@ -7,6 +7,7 @@ use App\database\Database;
 use PDO;
 use PDOException;
 use Exception;
+use flight\net\Response;
 
 class ticket
 {
@@ -37,19 +38,44 @@ class ticket
 
     //Funciones
     //Funcion para obtener todos los tickets
-    public static function GetAll()
+    public static function GetAll($limit = null, $offset = 0)
     {
+        $query = "SELECT * FROM tickets";
+        $query = $limit ? $query . " LIMIT $limit OFFSET $offset" : $query;
+
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = "SELECT * FROM tickets";
             $stmt = $connection->prepare($query);
+            if ($limit) {
+                $stmt->bindParam(':limit', $limit);
+                $stmt->bindParam(':offset', $offset);
+            }
             $stmt->execute();
-            //Remove password from response
-            $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $tickets = [];
+            foreach ($result as $key => $value) {
+                //Append tickets to array
+                $tickets[] = new Ticket($value['id'], $value['id_cliente'], $value['title'], $value['description'], $value['creation_date'], $value['status'], $value['priority'], $value['id_category'], $value['id_asesor']);
+            }
             return $tickets;
         } catch (PDOException $e) {
             throw new Exception("Error al obtener todos los tickets: " . $e->getMessage());
+        }
+    }
+
+    public static function count()
+    {
+        $query = "SELECT COUNT(*) as total FROM tickets";
+        try {
+            $db = Database::getInstance();
+            $connection = $db->getConnection();
+            $stmt = $connection->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'];
+        } catch (PDOException $e) {
+            throw new Exception("Error al contar los tickets: " . $e->getMessage());
         }
     }
 
@@ -64,7 +90,7 @@ class ticket
             $stmt->bindParam(':id', $id);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($result){
+            if ($result) {
                 return new ticket($result['id'], $result['id_cliente'], $result['title'], $result['description'], $result['creation_date'], $result['status'], $result['priority'], $result['id_category'], $result['id_asesor']);
             }
         } catch (PDOException $e) {
@@ -136,22 +162,47 @@ class ticket
     }
 
     //Funcion para obtener tickets por asesor
-    public static function GetByAsesor($asesor)
+    public static function GetByAsesor($asesor, $limit = null, $offset = 0)
     {
+        $query = "SELECT * FROM tickets WHERE id_asesor = :asesor";
+        $query = $limit ? $query . " LIMIT $limit OFFSET $offset" : $query;
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = "SELECT * FROM tickets WHERE asesor = :asesor";
             $stmt = $connection->prepare($query);
+            if ($limit) {
+                $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+            }
             $stmt->bindParam(':asesor', $asesor);
             $stmt->execute();
-            $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $tickets = [];
+            foreach ($result as $key => $value) {
+                $tickets[] = new ticket($value['id'], $value['id_cliente'], $value['title'], $value['description'], $value['creation_date'], $value['status'], $value['priority'], $value['id_category'], $value['id_asesor']);
+            }
             return $tickets;
         } catch (PDOException $e) {
             throw new Exception("Error al obtener los tickets del asesor: " . $e->getMessage());
         }
     }
 
+    public static function countByAsesor($asesor)
+    {
+        try {
+            $db = Database::getInstance();
+            $connection = $db->getConnection();
+            $query = "SELECT COUNT(*) as total FROM tickets WHERE id_asesor = :asesor";
+            $stmt = $connection->prepare($query);
+            $stmt->bindParam(':asesor', $asesor);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'];
+        } catch (PDOException $e) {
+            throw new Exception("Error al contar los tickets del asesor: " . $e->getMessage());
+        }
+    }
     //Funcion para obtener tickets por cliente
     public static function GetByClient($client)
     {
@@ -219,6 +270,4 @@ class ticket
             throw new Exception("Error al obtener los tickets de la prioridad: " . $e->getMessage());
         }
     }
-
-
 }
