@@ -4,7 +4,7 @@
       <table class="table align-middle">
         <thead class="table-light">
           <tr>
-            <th style="width: 20%">Nombre</th>
+            <th style="width: 20%" class="d-none d-md-table-cell">Nombre</th>
             <th style="width: 25%">Usuario</th>
             <th style="width: 20%" class="d-none d-md-table-cell">Teléfono</th>
             <th style="width: 20%">Rol</th>
@@ -13,8 +13,21 @@
         </thead>
         <tbody>
           <tr v-for="user in users" :key="user.id">
-            <td>
-              <div class="ellipsis">{{ user.name }}</div>
+            <td class="d-none d-md-table-cell">
+              <div class="d-flex align-items-center ellipsis">
+                <img
+                  :src="
+                    user.profile_image
+                      ? user.profile_image
+                      : `https://ui-avatars.com/api/?name=${user.name}&background=random`
+                  "
+                  @error="onImageError(user.username, $event)"
+                  alt="Avatar"
+                  class="rounded-circle me-2 d-none d-sm-inline-block"
+                  style="width: 30px; height: 30px; object-fit: cover"
+                />
+                <div>{{ user.name }}</div>
+              </div>
             </td>
 
             <td>
@@ -93,6 +106,9 @@ export default {
           this.userStates[user.id] = prev
         }
       })
+    },
+    onImageError(username, e) {
+      e.target.src = `https://ui-avatars.com/api/?name=${username}&background=random`
     },
   },
 }

@@ -1,104 +1,85 @@
 <template>
-  <div class="ticket-view">
-    <div v-if="ticket">
-      <div class="d-flex justify-content-start align-items-center mb-3">
-        <RouterLink class="btn btn-link text-decoration-none" to="/tickets">
-          <i class="fas fa-arrow-left fa-lg"></i>
-        </RouterLink>
-        <h1 class="mb-0">{{ ticket.title }}</h1>
-      </div>
-
-      <div class="row mt-4">
-        <div class="col-12 col-md-4">
-          <div class="container">
-            <div class="card">
-              <div class="card-header">
-                <h3>Información del ticket</h3>
-              </div>
-              <div class="card-body">
-                <div class="alert alert-light">
-                  <span>{{ ticket.description }}</span>
-                </div>
-
-                <p>
-                  <strong>Estado:</strong>
-                  <span
-                    class="badge"
-                    :class="
-                      (() => {
-                        switch (ticket.status) {
-                          case 'NEW':
-                            return 'bg-danger'
-                          case 'IN_PROGRESS':
-                            return 'bg-warning'
-                          case 'CLOSED':
-                            return 'bg-primary'
-                          default:
-                            return 'bg-secondary'
-                        }
-                      })()
-                    "
-                  >
-                    {{ ticket.status }}
-                  </span>
-                </p>
-                <p><strong>Prioridad:</strong> {{ ticket.priority }}</p>
-                <p><strong>Fecha de creación:</strong> {{ ticket.creation_date }}</p>
-              </div>
-            </div>
-          </div>
+  <div class="ticket" v-if="ticket">
+    <div class="d-flex mt-3 align-items-center" style="align-items: center">
+      <button class="btn align-self-center" @click="goBack">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <h2 class="ms-1">
+        <span class="badge bg-primary">Ticket #{{ ticket.id }}</span>
+      </h2>
+    </div>
+    <div class="container">
+      <h3 class="mt-2 fw-semibold text-dark">
+        {{ ticket.title || '\u00A0' }}
+      </h3>
+      <div class="row">
+        <div class="col-lg-4">
+          <!-- Left column content here -->
+          <TicketInfoC
+            :ticket="ticket"
+            @update-status="uptadeStatus(ticket.id, $event)"
+            @update-title="updateTitle(ticket.id, $event)"
+          />
         </div>
-        <div class="col-12 col-md-8">
-          <div class="container">
-            <div class="card">
-              <div class="card-header">
-                <h3>Interacciones</h3>
-              </div>
-              <div class="card-body">
-                <div v-for="interaction in interactions" :key="interaction.id">
-                  <div class="card mt-2">
-                    <div class="card-header d-flex justify-content-between">
-                      <span>{{ interaction.user.name }}</span>
-                      <span>{{
-                        new Intl.DateTimeFormat('es-AR', {
-                          year: '2-digit',
-                          month: '2-digit',
-                          day: '2-digit',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        }).format(new Date(interaction.interaction_date))
-                      }}</span>
-                    </div>
-                    <div class="card-body">
-                      <p>{{ interaction.message }}</p>
-                    </div>
-                  </div>
-                </div>
-                <form @submit.prevent="handleAddInteraction" class="mt-3">
-                  <div class="form-group">
-                    <textarea
-                      class="form-control"
-                      rows="3"
-                      placeholder="Ingrese su respuesta"
-                    ></textarea>
-                  </div>
-                  <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-sm btn-primary mt-2">Enviar</button>
-                  </div>
-                </form>
-              </div>
-            </div>
+        <div class="col-lg-8 mt-3 mt-lg-0">
+          <!-- Ticket tool bar -->
+          <div class="btn-group w-100 flex-wrap" role="group" aria-label="Ticket actions">
+            <button
+              type="button"
+              class="btn btn-light flex-fill"
+              @click="transferTicket(ticket.id)"
+            >
+              <i class="fas fa-random"></i>
+              <span class="d-none d-lg-inline ms-1">Transferir</span>
+            </button>
+
+            <button type="button" class="btn btn-light flex-fill" @click="openWorklog(ticket.id)">
+              <i class="fas fa-book"></i>
+              <span class="d-none d-lg-inline ms-1">Worklog</span>
+            </button>
+
+            <button type="button" class="btn btn-light flex-fill" @click="toggleMode">
+              <i :class="isInternalMode ? 'fas fa-lock' : 'fas fa-globe'"></i>
+              <span class="d-none d-lg-inline ms-1">
+                {{ isInternalMode ? 'Modo interno' : 'Modo público' }}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-primary flex-fill"
+              @click="resolveTicket(ticket.id)"
+            >
+              <i class="fas fa-check"></i>
+              <span class="d-none d-lg-inline ms-1">Resolver</span>
+            </button>
+          </div>
+
+          <div v-if="interactions.length">
+            <h5>Interactions</h5>
+            <ul class="list-group">
+              <li v-for="interaction in interactions" :key="interaction.id" class="list-group-item">
+                {{ interaction.content }}
+              </li>
+            </ul>
+          </div>
+          <div v-else>
+            <p>No interactions found.</p>
           </div>
         </div>
       </div>
     </div>
   </div>
 </template>
-
 <script>
+import TicketInfoC from '@/components/Tickets/TicketInfoC.vue'
 import { makeQuery } from '@/services/api'
+
 export default {
   name: 'TicketView',
+  components: {
+    TicketInfoC,
+  },
   data() {
     return {
       ticket: null,
@@ -131,34 +112,23 @@ export default {
         console.error('Error fetching interactions:', error)
       }
     },
+
+    async uptadeStatus(ticketId, status) {
+      try {
+        await makeQuery(`/tickets/${ticketId}`, 'PUT', { status: status })
+      } catch (error) {
+        console.error('Error updating ticket status:', error)
+      }
+    },
+
+    async updateTitle(ticketId, title) {
+      try {
+        await makeQuery(`/tickets/${ticketId}`, 'PUT', { title: title })
+        this.fetchTicketById(ticketId) // Refresh the ticket data after updating
+      } catch (error) {
+        console.error('Error updating ticket title:', error)
+      }
+    },
   },
 }
 </script>
-
-<style scoped>
-.ticket-view {
-  padding: 20px;
-}
-
-.ticket-card {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 20px;
-  max-width: 400px;
-  background-color: #f9f9f9;
-}
-
-button {
-  margin-top: 10px;
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #0056b3;
-}
-</style>

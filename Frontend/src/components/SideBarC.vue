@@ -13,7 +13,14 @@
       <!-- Perfil -->
       <div class="profile">
         <RouterLink to="/profile">
-          <img v-if="profileImage" :src="profileImage" alt="Profile" class="profile-img" />
+          <img
+            v-if="profileImage"
+            :src="profileImage"
+            @error="onImageError"
+            @click="closeMobileMenu"
+            alt="Profile"
+            class="profile-img"
+          />
           <i v-else class="fas fa-user-circle icon profile-icon"></i>
         </RouterLink>
       </div>
@@ -59,6 +66,10 @@ export default {
       type: String,
       default: null,
     },
+    Username: {
+      type: String,
+      default: 'User',
+    },
     mainLinks: {
       type: Array,
       default: () => [],
@@ -86,6 +97,9 @@ export default {
     },
     handleModalClose() {
       this.isOpenModal = false
+    },
+    onImageError(e) {
+      e.target.src = `https://ui-avatars.com/api/?name=${this.Username}&background=random`
     },
   },
   mounted() {

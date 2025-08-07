@@ -1,21 +1,25 @@
 <template>
-  <main class="main-content vh-100">
+  <main class="main-content">
     <ul class="nav nav-tabs">
       <li class="nav-item">
         <RouterLink
-          class="nav-link"
+          class="nav-link d-flex align-items-center"
           :class="{ active: $route.path === '/tickets' }"
           aria-current="page"
           to="/tickets"
-          >Inbox</RouterLink
         >
+          <i class="fas fa-inbox me-2"></i>
+          Inbox
+        </RouterLink>
       </li>
       <li class="nav-item">
         <RouterLink
-          class="nav-link"
+          class="nav-link d-flex align-items-center"
           :class="{ active: $route.path === '/tickets/groups' }"
           to="/tickets/groups"
-          >Grupos</RouterLink
+        >
+          <i class="fas fa-users me-2"></i>
+          Grupos</RouterLink
         >
       </li>
     </ul>

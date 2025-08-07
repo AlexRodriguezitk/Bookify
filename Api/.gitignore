@@ -5,7 +5,7 @@
 /.env
 /.env.local
 /.env.*.local
-
+/content
 # Ignorar archivos temporales de PHP
 *.log
 *.swp

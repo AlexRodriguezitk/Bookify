@@ -2,6 +2,7 @@
 
 namespace App\controllers;
 
+use App\models\CT_Fields;
 use App\traits\ApiResponse;
 use App\traits\Log;
 use App\traits\ST_History;
@@ -64,6 +65,31 @@ class TicketController
         if ($ticket) {
             $custom_values = CT_Values::getByTicket($id);
             $ticket->custom_values = $custom_values;
+            // Fetching the asesor and client details
+            $asesor = User::get($ticket->asesor);
+            if ($asesor) {
+                // Clear sensitive information
+                unset($asesor->password, $asesor->phone);
+                $ticket->asesor = $asesor;
+            } else {
+                $ticket->asesor = null;
+            }
+            $client = User::get($ticket->client);
+            if ($client) {
+                // Clear sensitive information
+                unset($client->password);
+                $ticket->client = $client;
+            } else {
+                $ticket->client = null;
+            }
+
+            //fetching Custom Values
+            $custom_values = CT_Values::getByTicket($id);
+            $ticket->custom_values = $custom_values;
+            //fetching Custom Fields by category ticket
+            $custom_fields = CT_Fields::getByCategory($ticket->category);
+            $ticket->custom_fields = $custom_fields;
+
             $this->success([$ticket], 'Ticket found', 200);
         } else {
             $this->failed(null, 'Ticket not found', 404);
@@ -246,6 +272,9 @@ class TicketController
             foreach ($tickets as $ticket) {
                 $ticket->asesor = User::get($ticket->asesor);
                 $ticket->client = User::get($ticket->client);
+                //Clear sensitive information
+                unset($ticket->asesor->password, $ticket->asesor->phone);
+                unset($ticket->client->password);
             }
             $this->success(['tickets' => $tickets, 'pagination' => ['page' => $page, 'limit' => $limit, 'total' => $total, 'total_pages' => $pages]], 'Tickets list', 200);
         } else {
@@ -253,6 +282,9 @@ class TicketController
             foreach ($tickets as $ticket) {
                 $ticket->asesor = User::get($ticket->asesor);
                 $ticket->client = User::get($ticket->client);
+                //Clear sensitive information
+                unset($ticket->asesor->password, $ticket->asesor->phone);
+                unset($ticket->client->password);
             }
             $this->success(['tickets' => $tickets], 'Tickets list', 200);
         }

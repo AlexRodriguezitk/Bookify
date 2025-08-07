@@ -21,6 +21,7 @@ class ticket
     public $category;
     public $asesor;
     public $custom_values;
+    public $custom_fields;
 
     //Constructor
     public function __construct($id = null, $client = null, $title = null, $description = null, $creation_date = null, $status = null, $priority = null, $category = null, $asesor = null)

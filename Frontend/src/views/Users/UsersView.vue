@@ -415,6 +415,7 @@ export default {
         done(true)
       } catch (error) {
         console.error('Error deactivating user:', error)
+        this.alertClass = 'danger'
         this.errorMessages = error.response.data.message
         done(false)
       }

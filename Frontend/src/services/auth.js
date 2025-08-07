@@ -1,6 +1,8 @@
 import axios from 'axios'
 import Cookies from 'js-cookie'
 import router from '@/router'
+import { useUserStore } from '@/stores/user'
+
 
 const API_BASE_URL = './api/auth'
 
@@ -21,16 +23,19 @@ let lastRenewTime = 0
 const AuthService = {
   login: async (username, password) => {
     try {
-      //console.log('[Auth] Iniciando login con:', username)
       const response = await axios.post(`${API_BASE_URL}/login`, { username, password })
-      const { token } = response.data.data
+      const { token, user } = response.data.data
       if (token) {
         Cookies.set('jwt', token, cookieOptions)
-        //Set user store
 
-        //console.log('[Auth] Token guardado en cookie:', token)
-      } else {
-        //console.warn('[Auth] No se recibió token en la respuesta.')
+        // ✅ Actualiza el store
+        const userStore = useUserStore()
+        userStore.setUser({
+          name: user.name,
+          username: user.username,
+          rol: user.rol.name,            // extraemos solo el nombre del rol
+          profile_image: user.profile_image
+        })
       }
       return response.data
     } catch (error) {
@@ -38,6 +43,7 @@ const AuthService = {
       throw error
     }
   },
+
 
   register: async (name, username, password, phone) => {
     try {
@@ -75,12 +81,18 @@ const AuthService = {
       const response = await axios.get(`${API_BASE_URL}/renew`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       })
-      const { token: newToken } = response.data.data
+      const { token: newToken, user } = response.data.data
       if (newToken) {
         Cookies.set('jwt', newToken, cookieOptions)
-        //console.log('[Auth] Token renovado correctamente.')
-      } else {
-        //console.warn('[Auth] No se recibió nuevo token en la renovación.')
+      }
+      if (user) {
+        const userStore = useUserStore()
+        userStore.setUser({
+          name: user.name,
+          username: user.username,
+          rol: user.rol.name,
+          profile_image: user.profile_image
+        })
       }
       return response.data
     } catch (error) {
@@ -107,9 +119,11 @@ const AuthService = {
   },
 
   logout: () => {
-    //console.log('[Auth] Cerrando sesión, eliminando token.')
     Cookies.remove('jwt')
+    const userStore = useUserStore()
+    userStore.clearUser()
   },
+
 
   isAuthenticated: () => {
     const tokenExists = !!Cookies.get('jwt')

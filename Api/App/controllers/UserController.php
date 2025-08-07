@@ -103,7 +103,7 @@ class UserController
         }
 
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
-        $user = new User(null, $data['name'], $data['username'], $data['password'], $data['phone'] ?? "0", $data['rol'], $data['is_active']);
+        $user = new User(null, $data['name'], $data['username'], $data['password'], $data['phone'] ?? "0", $data['rol'], null, null, $data['is_active']);
         $user = User::create($user);
         $this->saveLog($AuthUser->id, 'USER_CREATED', 'USER WAS CREATED SUCCESSFULLY: ' . $user->name);
         $this->success([$user], 'User created', 201);
@@ -186,7 +186,7 @@ class UserController
         $user = User::get($id);
         if ($user) {
             if ($user->id == $AuthUser->id) {
-                $this->failed(null, 'You can inactive your own user', 403);
+                $this->failed(null, "You can't inactive your own user", 403);
             } else {
                 $user->is_active = 0;
                 $user = User::update($user);
@@ -285,7 +285,7 @@ class UserController
         }
 
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
-        $user = new User(null, $data['name'], $data['username'], $data['password'], $data['phone'], 2, 1);
+        $user = new User(null, $data['name'], $data['username'], $data['password'], $data['phone'], 2, null, null, 1);
         $user = User::create($user);
         //Loging and return JWT
         $token = \App\Auth::generateToken($user->id, $user->rol);

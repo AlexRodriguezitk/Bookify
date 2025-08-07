@@ -6,21 +6,35 @@
         :key="role.id"
         class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center"
       >
-        <span class="mb-2 mb-md-0">{{ role.name }}</span>
+        <span class="mb-2 mb-md-0"
+          >{{ role.name }}
+          <i
+            :class="
+              Number(role.id) == 1
+                ? 'fa-solid fa-lock'
+                : Number(role.id) == 2
+                  ? 'fa-solid fa-id-card'
+                  : 'fa-solid fa-user-group'
+            "
+          ></i
+        ></span>
         <div class="d-flex flex-wrap gap-2 justify-content-md-end">
           <button class="btn btn-sm btn-warning" @click="editRole(role)">
             <i class="fas fa-edit"></i> <span class="d-none d-sm-inline">Editar</span>
           </button>
-
           <button
-            v-if="role.id !== 1 && role.id !== 2"
+            v-if="Number(role.id) !== 1 && Number(role.id) !== 2"
             class="btn btn-sm btn-danger"
             @click="deleteRole(role.id)"
           >
             <i class="fas fa-trash"></i>
           </button>
 
-          <router-link :to="`/roles/${role.id}`" v-if="role.id !== 1" class="btn btn-sm btn-info">
+          <router-link
+            :to="`/roles/${role.id}`"
+            v-if="Number(role.id) !== 1"
+            class="btn btn-sm btn-info"
+          >
             <i class="fas fa-cogs"></i>
           </router-link>
         </div>

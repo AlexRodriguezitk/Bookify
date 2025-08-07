@@ -3,6 +3,7 @@
     <!-- Sidebar con imagen de perfil -->
     <Sidebar
       :profileImage="userProfileImage"
+      :Username="Profile"
       :mainLinks="mainLinks"
       :secondaryLinks="secondaryLinks"
     />
@@ -17,26 +18,31 @@
 <script>
 import Sidebar from '@/components/SideBarC.vue'
 import Permissions from '@/services/permissions'
+import { useUserStore } from '@/stores/user'
 
 export default {
   components: { Sidebar },
   data() {
     return {
-      userProfileImage: '', // Imagen de prueba
       mainLinks: [],
       secondaryLinks: [],
     }
   },
+  computed: {
+    // ✅ Computed para traer la imagen del store
+    userProfileImage() {
+      const userStore = useUserStore()
+      return (
+        userStore.profile_image ||
+        `https://ui-avatars.com/api/?name=${userStore.name}&background=random`
+      ) // fallback si no hay imagen
+    },
+    Profile() {
+      const userStore = useUserStore()
+      return userStore.username
+    },
+  },
   async created() {
-    const imageUrl = 'https://randomuser.me/api/portraits/men/90.jpg'
-    const img = new Image()
-    img.onload = () => {
-      this.userProfileImage = imageUrl
-    }
-    img.onerror = () => {
-      this.userProfileImage = null
-    }
-    img.src = imageUrl
     const userPermissions = await Permissions.checkPermissions([
       'TICKETS.VIEW',
       'SETTINGS.VIEW',
