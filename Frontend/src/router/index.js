@@ -34,17 +34,17 @@ const routes = [
       {
         path: '/tickets',
         component: Tickets,
-        meta: { requiresPermission: 'TICKET.INDEX' },
+        meta: { requiresPermission: 'TICKETS.VIEW' },
         children: [
           {
             path: 'settings',
             component: Home,
-            meta: { requiresPermission: 'TICKET.SETTINGS' },
+            meta: { requiresPermission: 'TICKETS.SETTINGS.VIEW' },
           },
           {
             path: ':id/',
             component: Ticket,
-            meta: { requiresPermission: 'TICKET.VIEW' },
+            meta: { requiresPermission: 'TICKETS.VIEW' },
           },
         ],
       },

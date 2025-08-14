@@ -42,7 +42,7 @@
           <li class="list-group-item d-flex justify-content-between">
             <strong>Usuario Activo:</strong>
             <span>
-              <span v-if="Profile.is_active === '1'" class="badge bg-success">Sí</span>
+              <span v-if="Profile.is_active == '1'" class="badge bg-success">Sí</span>
               <span v-else class="badge bg-danger">No</span>
             </span>
           </li>
@@ -142,6 +142,7 @@ export default {
       try {
         const response = await makeQuery('/profile', 'GET')
         this.Profile = response.data[0]
+        console.log(this.Profile)
       } catch (error) {
         this.showAlert('Error al cargar el perfil.', 'danger')
       }

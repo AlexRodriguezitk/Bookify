@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container h-100">
     <!-- Sidebar con imagen de perfil -->
     <Sidebar
       :profileImage="userProfileImage"
@@ -49,7 +49,6 @@ export default {
       'DASHBOARD.VIEW',
       'ACTIVITY.VIEW',
       'USERS.VIEW',
-      'LOGOUT.VIEW',
     ])
 
     this.mainLinks = [

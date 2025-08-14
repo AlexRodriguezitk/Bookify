@@ -71,12 +71,11 @@ class Interaction
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = "INSERT INTO interactions (id_ticket, id_user, message, interaction_date, type) VALUES (:id_ticket, :id_user, :message, :interaction_date, :type)";
+            $query = "INSERT INTO interactions (id_ticket, id_user, message, type) VALUES (:id_ticket, :id_user, :message, :type)";
             $stmt = $connection->prepare($query);
             $stmt->bindParam(':id_ticket', $interactions->id_ticket);
-            $stmt->bindParam(':id_user', $interactions->id_user);
+            $stmt->bindParam(':id_user', $interactions->user);
             $stmt->bindParam(':message', $interactions->message);
-            $stmt->bindParam(':interaction_date', $interactions->interaction_date);
             $stmt->bindParam(':type', $interactions->type);
             $stmt->execute();
             $interactions->id = $connection->lastInsertId();

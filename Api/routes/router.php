@@ -97,7 +97,7 @@ Flight::group('/tickets', function () {
     //Interactions
     Flight::route('GET /interactions', [new InteractionController(), 'index']);
     Flight::route('GET /interactions/@id', [new InteractionController(), 'show']);
-    Flight::route('POST /interactions', [new InteractionController(), 'store']);
+    Flight::route('POST /@id/interactions', [new InteractionController(), 'store']);
     Flight::route('PUT /interactions/@id', [new InteractionController(), 'update']);
     Flight::route('DELETE /interactions/@id', [new InteractionController(), 'destroy']);
     Flight::route('GET /@id/interactions', [new InteractionController(), 'getInteractionsByTicket']);
