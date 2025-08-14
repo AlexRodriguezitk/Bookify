@@ -6,6 +6,7 @@ use App\traits\Log;
 use App\traits\ApiResponse;
 use App\traits\HasPermissions;
 use App\models\Interaction;
+use App\models\ticket;
 use App\models\User;
 use Flight;
 
@@ -43,7 +44,7 @@ class InteractionController
         }
     }
 
-    public function store()
+    public function store($id_ticket)
     {
         $AuthUser = Flight::get('user');
         if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'INTERACTION.CREATE')) {
@@ -56,15 +57,19 @@ class InteractionController
             $this->failed(null, "No data provided", 400);
             return;
         }
-        $requiredFields = ['id_ticket', 'id_user', 'message', 'type'];
+        $requiredFields = ['message', 'type'];
         foreach ($requiredFields as $field) {
             if (empty($data[$field])) {
                 $this->failed(null, "Field '$field' is required", 400);
                 return;
             }
         }
+        $ticket = ticket::Get($id_ticket);
+        if (!$ticket) {
+            $this->failed(null, "Ticket not found", 404);
+        }
 
-        $interaction = new Interaction(null, $data['id_ticket'], $data['id_user'], $data['message'], null, $data['type']);
+        $interaction = new Interaction(null, $ticket->id, $AuthUser->id, $data['message'], null, $data['type']);
         $interaction = Interaction::create($interaction);
         $this->saveLog($AuthUser->id, 'INTERACTION_CREATED', 'INTERACTION WAS CREATED SUCCESSFULLY: ' . $interaction->message);
         $this->success([$interaction], 'Interaction created', 201);
@@ -121,7 +126,9 @@ class InteractionController
         $interactions = Interaction::getIntByTicket($id_ticket);
         if ($interactions) {
             foreach ($interactions as $interaction) {
-                $interaction->user = User::get($interaction->user);
+                $user = User::get($interaction->user);
+                unset($user->password, $user->phone, $user->created_at);
+                $interaction->user = $user;
             }
             $this->success($interactions, 'Interactions found', 200);
         } else {

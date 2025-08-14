@@ -12,7 +12,7 @@
         </a>
       </li>
     </ul>
-    <div class="overflow-auto" style="max-height: 350px">
+    <div class="overflow-auto" style="max-height: 400px">
       <div class="tab-content">
         <div class="tab-pane fade show active" id="i">
           <ul class="list-group">
