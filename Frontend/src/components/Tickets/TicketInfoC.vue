@@ -88,23 +88,28 @@
             <li class="list-group-item d-flex justify-content-between align-items-center">
               <strong>Asignado a:</strong>
               <span class="d-flex align-items-center">
-                <img
-                  :src="
-                    ticket.asesor.profile_image
-                      ? ticket.asesor.profile_image
-                      : `https://ui-avatars.com/api/?name=${ticket.asesor.name}&background=random`
-                  "
-                  alt="Profile Image"
-                  class="rounded-circle"
-                  width="30"
-                  height="30"
-                />
-                <router-link
-                  :to="`/users/${ticket.asesor.id}`"
-                  class="ms-2 text-decoration-none text-dark"
-                >
-                  {{ ticket.asesor.name }}
-                </router-link>
+                <template v-if="ticket.asesor">
+                  <img
+                    :src="
+                      ticket.asesor.profile_image
+                        ? ticket.asesor.profile_image
+                        : `https://ui-avatars.com/api/?name=${ticket.asesor.name}&background=random`
+                    "
+                    alt="Profile Image"
+                    class="rounded-circle"
+                    width="30"
+                    height="30"
+                  />
+                  <router-link
+                    :to="`/users/${ticket.asesor.id}`"
+                    class="ms-2 text-decoration-none text-dark"
+                  >
+                    {{ ticket.asesor.name }}
+                  </router-link>
+                </template>
+                <template v-else>
+                  <span class="text-muted ms-2">Sin asignar</span>
+                </template>
               </span>
             </li>
             <li class="list-group-item">
