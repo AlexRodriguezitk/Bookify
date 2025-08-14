@@ -150,6 +150,7 @@ export default {
     return {
       content: '',
       savedRange: null,
+      sending: false,
       linkTitle: '',
       linkUrl: '',
       imageUrl: '',

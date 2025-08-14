@@ -5,6 +5,7 @@ namespace App;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use App\models\User;
 use Exception;
 use GrahamCampbell\ResultType\Success;
 
@@ -63,6 +64,10 @@ class Auth
             \Flight::halt(401, json_encode(['error' => 'Token inválido']));
         }
 
+        $DB_User = User::Get($user->id);
+        if (!$DB_User->is_active) {
+            \Flight::halt(401, json_encode(['error' => 'Token inválido']));
+        }
         \Flight::set('user', $user);
     }
 }
