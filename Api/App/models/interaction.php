@@ -127,7 +127,7 @@ class Interaction
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = "SELECT * FROM interactions WHERE id_ticket = :id_ticket";
+            $query = "SELECT * FROM interactions WHERE id_ticket = :id_ticket ORDER BY interaction_date ASC";
             $stmt = $connection->prepare($query);
             $stmt->bindParam(':id_ticket', $id_ticket);
             $stmt->execute();

@@ -16,7 +16,6 @@
       >
         <!-- Encabezado -->
         <div class="d-flex align-items-center mb-2">
-          <!-- Avatar -->
           <img
             :src="avatarImage"
             alt="User Profile Image"
@@ -24,7 +23,6 @@
             width="32"
             height="32"
           />
-
           <small class="fw-bold" :class="{ 'text-white': isOwnInteraction }">
             {{ interaction.user.username }}
           </small>
@@ -76,7 +74,13 @@ export default {
       )
     },
     safeMessage() {
-      const raw = this.interaction.message || ''
+      let raw = this.interaction.message || ''
+
+      // 🔹 Reemplazar <font color="..."> por <span style="color:...">
+      raw = raw.replace(/<font color="([^"]+)">([\s\S]*?)<\/font>/gi, (_, color, inner) => {
+        return `<span style="color:${color}">${inner}</span>`
+      })
+
       const container = document.createElement('div')
       container.innerHTML = raw
       const isOwn = this.isOwnInteraction
@@ -100,7 +104,6 @@ export default {
         a.target = '_blank'
         a.rel = 'noopener noreferrer'
         a.className = `btn btn-sm ms-1 ${isOwn ? 'btn-outline-light' : 'btn-outline-success'}`
-        // Mantener texto original
       })
 
       // 3️⃣ Detectar URLs en texto plano
@@ -120,7 +123,15 @@ export default {
           a.href = url
           a.target = '_blank'
           a.rel = 'noopener noreferrer'
-          a.className = `btn btn-sm ms-1 ${isImage ? (isOwn ? 'btn-outline-light' : 'btn-outline-primary') : isOwn ? 'btn-outline-light' : 'btn-outline-success'}`
+          a.className = `btn btn-sm ms-1 ${
+            isImage
+              ? isOwn
+                ? 'btn-outline-light'
+                : 'btn-outline-primary'
+              : isOwn
+                ? 'btn-outline-light'
+                : 'btn-outline-success'
+          }`
           a.textContent = isImage ? 'Ver' : 'Ir'
           frag.appendChild(a)
           lastIndex = idx + url.length
@@ -140,8 +151,27 @@ export default {
       walk(container)
 
       return DOMPurify.sanitize(container.innerHTML, {
-        ALLOWED_TAGS: ['a', 'b', 'i', 'u', 'code', 'br', 'small', 'strong', 'em', 'p', 'span'],
-        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'title'],
+        ALLOWED_TAGS: [
+          'a',
+          'b',
+          'i',
+          'u',
+          'code',
+          'br',
+          'small',
+          'strong',
+          'em',
+          'p',
+          'span',
+          'h1',
+          'h2',
+          'h3',
+          'ul',
+          'ol',
+          'li',
+          'div',
+        ],
+        ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'title', 'style'],
       })
     },
   },
@@ -166,6 +196,7 @@ export default {
   border-radius: 16px;
   padding: 10px;
   word-break: break-word;
+  white-space: pre-wrap; /* mantiene saltos de línea */
 }
 
 .own-message {
