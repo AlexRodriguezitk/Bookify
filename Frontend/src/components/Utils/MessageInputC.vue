@@ -1,44 +1,89 @@
 <template>
   <div class="d-flex flex-column gap-2 p-2 border-top">
-    <!-- Toolbar con iconos -->
-    <div class="d-flex gap-1 mb-1">
+    <!-- Toolbar -->
+    <div class="d-flex gap-1 mb-1 flex-wrap align-items-center">
+      <!-- Estilos básicos -->
+      <button class="btn btn-sm btn-primary" @mousedown.prevent="execCommand('bold')">
+        <i class="fas fa-bold"></i>
+      </button>
+      <button class="btn btn-sm btn-primary" @mousedown.prevent="execCommand('italic')">
+        <i class="fas fa-italic"></i>
+      </button>
+      <button class="btn btn-sm btn-primary" @mousedown.prevent="execCommand('underline')">
+        <i class="fas fa-underline"></i>
+      </button>
+
+      <!-- Listas -->
       <button
-        class="btn btn-sm btn-outline-primary"
-        @mousedown.prevent="openLinkModal"
-        :disabled="!editorFocused"
+        class="btn btn-sm btn-primary"
+        @mousedown.prevent="execCommand('insertUnorderedList')"
       >
+        <i class="fas fa-list-ul"></i>
+      </button>
+      <button class="btn btn-sm btn-primary" @mousedown.prevent="execCommand('insertOrderedList')">
+        <i class="fas fa-list-ol"></i>
+      </button>
+
+      <!-- Alineación -->
+      <button class="btn btn-sm btn-primary" @mousedown.prevent="execCommand('justifyLeft')">
+        <i class="fas fa-align-left"></i>
+      </button>
+      <button class="btn btn-sm btn-primary" @mousedown.prevent="execCommand('justifyCenter')">
+        <i class="fas fa-align-center"></i>
+      </button>
+      <button class="btn btn-sm btn-primary" @mousedown.prevent="execCommand('justifyRight')">
+        <i class="fas fa-align-right"></i>
+      </button>
+      <button class="btn btn-sm btn-primary" @mousedown.prevent="execCommand('justifyFull')">
+        <i class="fas fa-align-justify"></i>
+      </button>
+
+      <!-- Colores -->
+      <input
+        type="color"
+        v-model="foreColor"
+        @input="execCommand('foreColor', foreColor)"
+        title="Color de texto"
+      />
+      <input
+        type="color"
+        v-model="backColor"
+        @input="execCommand('hiliteColor', backColor)"
+        title="Color de fondo"
+      />
+
+      <!-- Enlaces, imágenes y archivos -->
+      <button class="btn btn-sm btn-primary" @mousedown.prevent="openLinkModal">
         <i class="fas fa-link"></i>
       </button>
-      <button
-        class="btn btn-sm btn-outline-success"
-        @mousedown.prevent="openImageModal"
-        :disabled="!editorFocused"
-      >
+      <button class="btn btn-sm btn-primary" @mousedown.prevent="openImageModal">
         <i class="fas fa-image"></i>
       </button>
+      <button class="btn btn-sm btn-primary" @click="openFileInput">
+        <i class="fas fa-file"></i>
+      </button>
+      <input type="file" ref="fileInput" style="display: none" @change="onFileSelected" multiple />
     </div>
 
-    <!-- Editor de texto enriquecido -->
+    <!-- Editor -->
     <div
+      id="editor"
       ref="editor"
       contenteditable="true"
-      class="form-control flex-grow-1"
+      class="form-control flex-grow-1 editor-scroll"
       @input="onInput"
       @keydown.enter="handleEnter"
-      @focus="editorFocused = true"
-      @blur="editorFocused = false"
       placeholder="Escribe un mensaje..."
-      style="min-height: 60px; overflow-y: auto"
     ></div>
 
     <!-- Botón enviar -->
     <div class="d-flex justify-content-end mt-1">
       <button class="btn btn-primary" :disabled="sending || !hasContent" @click="onSend">
-        <i class="fas fa-paper-plane"></i>
+        <i class="fas fa-paper-plane"></i> Enviar
       </button>
     </div>
 
-    <!-- Modal Insertar Link -->
+    <!-- Modales de enlace e imagen -->
     <div class="modal fade" tabindex="-1" ref="linkModal">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -76,27 +121,7 @@
             <button type="button" class="btn-close" @click="hideImageModal"></button>
           </div>
           <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label fw-bold" for="profileImageInput"
-                >Selecciona una imagen</label
-              >
-              <div class="input-group">
-                <input
-                  id="profileImageInput"
-                  type="file"
-                  accept="image/*"
-                  class="form-control"
-                  @change="onFileChange"
-                />
-                <button class="btn btn-primary" type="button" @click="handleUploadImage">
-                  Subir
-                </button>
-              </div>
-              <div class="form-text">Máximo 500x500 px. Formato JPG, PNG.</div>
-            </div>
-            <label class="form-label fw-bold" for="profileImageInput"
-              >O coloque la url de la imagen</label
-            >
+            <input type="file" accept="image/*" class="form-control mb-2" @change="onFileChange" />
             <input
               type="text"
               v-model="imageUrl"
@@ -104,10 +129,9 @@
               placeholder="URL de la imagen"
             />
           </div>
-
           <div class="modal-footer">
             <button class="btn btn-secondary" @click="hideImageModal">Cancelar</button>
-            <button class="btn btn-success" :disabled="imageUrl === ''" @click="confirmInsertImage">
+            <button class="btn btn-success" :disabled="!imageUrl" @click="confirmInsertImage">
               Insertar
             </button>
           </div>
@@ -120,20 +144,20 @@
 <script>
 import * as bootstrap from 'bootstrap'
 import { makeQuery } from '@/services/api'
+
 export default {
-  name: 'MessageInputC',
-  props: { sending: { type: Boolean, default: false } },
   data() {
     return {
       content: '',
-      linkTitle: '', // nuevo campo para el título del enlace
+      savedRange: null,
+      linkTitle: '',
       linkUrl: '',
       imageUrl: '',
+      selectedFile: null,
       linkModalInstance: null,
       imageModalInstance: null,
-      savedRange: null,
-      selectedFile: null,
-      editorFocused: false,
+      foreColor: '#000000',
+      backColor: '#ffffff',
     }
   },
   computed: {
@@ -142,50 +166,15 @@ export default {
     },
   },
   mounted() {
-    // Instancias de los modales
     this.linkModalInstance = new bootstrap.Modal(this.$refs.linkModal, { backdrop: 'static' })
     this.imageModalInstance = new bootstrap.Modal(this.$refs.imageModal, { backdrop: 'static' })
   },
   methods: {
-    async handleUploadImage() {
-      if (!this.selectedFile) {
-        this.showAlert('Selecciona una imagen válida.', 'danger')
-        return
-      }
-      this.uploading = true
-      const formData = new FormData()
-      formData.append('file', this.selectedFile)
-
-      // Subir imagen
-      const uploadResponse = await makeQuery('/Upload', 'POST', formData, true)
-      const newImageUrl = uploadResponse.file_url
-      console.log('Imagen subida:', newImageUrl)
-      this.imageUrl = newImageUrl
-    },
-    onFileChange(e) {
-      const file = e.target.files[0]
-
-      if (file) {
-        const img = new Image()
-        img.src = URL.createObjectURL(file)
-
-        img.onload = () => {
-          // Check if image dimensions exceed 1000x1000
-          if (img.width > 1000 || img.height > 1000) {
-            // Show an error message and clear the file selection
-            this.showAlert('La imagen no debe superar 500x500 px.', 'danger')
-            this.selectedFile = null
-            this.previewUrl = null
-
-            // Revoke the object URL to free up memory
-            URL.revokeObjectURL(img.src)
-          } else {
-            // If dimensions are fine, set the file and create a preview URL
-            this.selectedFile = file
-            this.previewUrl = URL.createObjectURL(file)
-          }
-        }
-      }
+    execCommand(command, value = null) {
+      this.restoreSelection()
+      document.execCommand(command, false, value)
+      this.onInput()
+      this.$refs.editor.focus()
     },
     onInput() {
       this.content = this.$refs.editor?.innerHTML || ''
@@ -199,12 +188,10 @@ export default {
     },
     onSend() {
       if (!this.hasContent) return
-      this.$emit('send', this.$refs.editor.innerHTML.trim())
+      this.$emit('send', this.content)
       this.$refs.editor.innerHTML = ''
       this.content = ''
-      this.$refs.editor.focus()
     },
-    // Guardar/restaurar selección
     saveSelection() {
       const sel = window.getSelection()
       if (sel.rangeCount > 0) this.savedRange = sel.getRangeAt(0)
@@ -215,79 +202,100 @@ export default {
       sel.removeAllRanges()
       sel.addRange(this.savedRange)
     },
-    // Abrir modales
     openLinkModal() {
       this.saveSelection()
       this.linkModalInstance.show()
-    },
-    openImageModal() {
-      this.saveSelection()
-      this.imageModalInstance.show()
     },
     hideLinkModal() {
       this.linkTitle = ''
       this.linkUrl = ''
       this.linkModalInstance.hide()
     },
+    openImageModal() {
+      this.saveSelection()
+      this.imageModalInstance.show()
+    },
     hideImageModal() {
       this.imageUrl = ''
+      this.selectedFile = null
       this.imageModalInstance.hide()
     },
-    // Insertar enlace con título y detección local/externa
     confirmInsertLink() {
-      if (!this.linkUrl || !this.linkTitle) return
-
-      this.restoreSelection()
+      if (!this.linkTitle || !this.linkUrl) return
+      const editor = this.$refs.editor
       const a = document.createElement('a')
       let url = this.linkUrl.trim()
-
-      // Detectar local vs externa
-      if (url.startsWith('./') || url.startsWith('/')) {
-        // Local
-        a.style.color = '#28a745' // verde
-      } else {
-        // Externa
-        a.style.color = '#0d6efd' // azul
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-          url = 'https://' + url
-        }
-      }
-
+      if (!url.startsWith('http')) url = 'https://' + url
       a.href = url
       a.target = '_blank'
       a.rel = 'noopener noreferrer'
       a.textContent = this.linkTitle
-
-      const range = this.savedRange
-      range.deleteContents()
-      range.insertNode(a)
-      range.setStartAfter(a)
-      range.setEndAfter(a)
+      if (this.savedRange && editor.contains(this.savedRange.commonAncestorContainer)) {
+        this.restoreSelection()
+        this.savedRange.deleteContents()
+        this.savedRange.insertNode(a)
+      } else {
+        editor.appendChild(a)
+      }
       this.onInput()
-      this.$refs.editor.focus()
-      this.hideLinkModal()
       this.savedRange = null
-      this.linkTitle = ''
-      this.linkUrl = ''
+      this.hideLinkModal()
+      this.$refs.editor.focus()
     },
-    // Insertar imagen (opcional: puedes añadir lógica similar para detectar local/externa)
-    confirmInsertImage() {
+    onFileChange(e) {
+      const file = e.target.files[0]
+      if (!file) return
+      this.selectedFile = file
+      this.imageUrl = URL.createObjectURL(file)
+    },
+    async confirmInsertImage() {
       if (!this.imageUrl) return
-      this.restoreSelection()
+      let url = this.imageUrl
+      if (this.selectedFile) {
+        const fd = new FormData()
+        fd.append('file', this.selectedFile)
+        const res = await makeQuery('/Upload', 'POST', fd, true)
+        url = res.file_url
+      }
+      const editor = this.$refs.editor
       const img = document.createElement('img')
-      img.src = this.imageUrl
+      img.src = url
       img.alt = 'Imagen'
       img.style.maxWidth = '150px'
       img.style.maxHeight = '150px'
       img.className = 'img-fluid rounded me-1'
-      const range = this.savedRange
-      range.insertNode(img)
-      range.setStartAfter(img)
-      range.setEndAfter(img)
+      if (this.savedRange && editor.contains(this.savedRange.commonAncestorContainer)) {
+        this.restoreSelection()
+        this.savedRange.insertNode(img)
+      } else {
+        editor.appendChild(img)
+      }
       this.onInput()
-      this.$refs.editor.focus()
-      this.hideImageModal()
       this.savedRange = null
+      this.hideImageModal()
+      this.$refs.editor.focus()
+    },
+    openFileInput() {
+      this.$refs.fileInput.click()
+    },
+    async onFileSelected(e) {
+      const files = Array.from(e.target.files)
+      if (!files.length) return
+      const editor = this.$refs.editor
+      const filesContainer = document.createElement('files')
+      for (let file of files) {
+        const fd = new FormData()
+        fd.append('file', file)
+        const res = await makeQuery('/Upload', 'POST', fd, true)
+        const a = document.createElement('a')
+        a.href = res.file_url
+        a.textContent = file.name
+        a.target = '_blank'
+        a.className = 'd-block'
+        filesContainer.appendChild(a)
+      }
+      editor.appendChild(filesContainer)
+      this.onInput()
     },
   },
 }
@@ -300,7 +308,11 @@ export default {
   pointer-events: none;
   display: block;
 }
-[contenteditable] {
+
+.editor-scroll {
+  min-height: 80px;
+  max-height: 110px; /* límite de altura antes del scroll */
+  overflow-y: auto;
   border-radius: 0.375rem;
   padding: 0.375rem 0.75rem;
 }

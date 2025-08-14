@@ -1,6 +1,6 @@
 <template>
   <main class="h-100">
-    <div class="chat-container h-100 d-flex flex-column" style="max-height: 500px">
+    <div class="chat-container h-100 d-flex flex-column" style="max-height: 600px">
       <div ref="chatContainer" class="chat-messages flex-grow-1 overflow-auto">
         <template v-if="publict">
           <div v-for="interaction in filteredInteractions" :key="interaction.id">
