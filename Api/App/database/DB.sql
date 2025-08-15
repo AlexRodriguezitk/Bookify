@@ -161,7 +161,8 @@ CREATE TABLE `tickets` (
   `status` enum('NEW','IN_PROGRESS','CLOSED') NOT NULL DEFAULT 'NEW',
   `priority` enum('LOW','MEDIUM','HIGH') NOT NULL DEFAULT 'MEDIUM',
   `id_category` int(11) NOT NULL,
-  `id_asesor` int(11) DEFAULT NULL
+  `id_asesor` int(11) DEFAULT NULL,
+  `public_token` char(64) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -210,6 +211,17 @@ CREATE TABLE `worklog` (
   `work_description` text NOT NULL,
   `log_date` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+CREATE TABLE `settings` (
+  `id` int unsigned NOT NULL,
+  `key` varchar(100) NOT NULL,
+  `value` text,
+  `type` enum('string','number','boolean','json') DEFAULT 'string',
+  `description` text,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Índices para tablas volcadas
@@ -290,6 +302,7 @@ ALTER TABLE `terminals`
 --
 ALTER TABLE `tickets`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_public_token` (`public_token`),
   ADD KEY `id_cliente` (`id_cliente`),
   ADD KEY `id_category` (`id_category`),
   ADD KEY `id_asesor` (`id_asesor`);
@@ -318,9 +331,24 @@ ALTER TABLE `worklog`
   ADD KEY `id_ticket` (`id_ticket`),
   ADD KEY `id_user` (`id_user`);
 
+
+  -- --------------------------------------------------------
+-- Índices para la tabla `settings`
+-- --------------------------------------------------------
+
+ALTER TABLE `settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `key_UNIQUE` (`key`);
+
 --
 -- AUTO_INCREMENT de las tablas volcadas
 --
+
+--
+-- AUTO_INCREMENT de la tabla `categories`
+--
+ALTER TABLE `settings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `categories`
