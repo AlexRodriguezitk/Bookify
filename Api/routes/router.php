@@ -15,6 +15,8 @@ use App\controllers\PermissionController;
 use App\controllers\STHistoryController;
 use App\controllers\WorkLogController;
 use App\controllers\UploadController;
+use App\controllers\SettingsController;
+
 use App\Auth;
 
 
@@ -33,6 +35,13 @@ Flight::group('/auth', function () {
     Flight::route('GET /renew', [new UserController(), 'renew']);
     Flight::route('POST /register', [new UserController(), 'register']);
     Flight::route('GET /generate', [new UserController(), 'GenPassword']);
+});
+
+// Settings
+Flight::group('/settings', function () {
+    Flight::route('GET /', [new SettingsController(), 'index']);     // Lista todas las configuraciones
+    Flight::route('GET /@key', [new SettingsController(), 'show']);     // Muestra una configuración por clave
+    Flight::route('PUT /@key', [new SettingsController(), 'update']);   // Actualiza el valor de una configuración
 });
 
 //Rutas usuarios
