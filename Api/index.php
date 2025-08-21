@@ -20,8 +20,11 @@ $db = Database::getInstance();
 // Middleware para verificar autenticación y conexión a la BD
 Flight::before('start', function () use ($db, $is_installed) {
     $route = Flight::request()->url;
+
+    // ✅ Agregadas las nuevas rutas de login a las rutas públicas
     $publicRoutes = [
-        '/auth/login',
+        '/auth/login/password',
+        '/auth/login/verify-2fa',
         '/auth/register',
         '/install',
         '/status',
@@ -35,7 +38,7 @@ Flight::before('start', function () use ($db, $is_installed) {
             $controller->handle($db->getError()); // Llamar al controlador
             Flight::stop();
             return;
-        } {
+        } else {
             $controller->handle('Database is not installed. Please run POST /api/install to set it up.'); // Llamar al controlador
             Flight::stop();
             return;

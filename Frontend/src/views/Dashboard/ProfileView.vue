@@ -1,6 +1,5 @@
 <template>
   <main class="container py-5 d-flex justify-content-center align-items-center min-vh-80 bg-light">
-    <!-- Alerta flotante -->
     <AlertC v-if="alertMessage" :message="alertMessage" :color="alertColor" />
 
     <div
@@ -9,7 +8,6 @@
       style="max-width: 400px; width: 100%"
     >
       <div class="card-body">
-        <!-- Imagen con overlay -->
         <div class="profile-image-wrapper mx-auto mb-3 position-relative" @click="openModal">
           <img
             :src="
@@ -26,7 +24,6 @@
           </div>
         </div>
 
-        <!-- Info del perfil -->
         <h4 class="card-title mb-1">{{ Profile.name }}</h4>
         <p class="text-muted mb-2">@{{ Profile.username }}</p>
 
@@ -50,11 +47,24 @@
             <strong>Creado el:</strong>
             <span>{{ formatDate(Profile.created_at) }}</span>
           </li>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <strong>Autenticación de dos factores (2FA):</strong>
+            <div v-if="Profile.totp_secret">
+              <span class="badge bg-success">Activado</span>
+            </div>
+            <div v-else>
+              <div class="d-flex align-items-center">
+                <span class="badge bg-secondary">Desactivado</span>
+                <button @click="openTotpModal" class="btn btn-sm btn-outline-primary ms-2">
+                  Activar
+                </button>
+              </div>
+            </div>
+          </li>
         </ul>
       </div>
     </div>
 
-    <!-- Modal Mejorado -->
     <div
       class="modal fade"
       ref="uploadModal"
@@ -112,6 +122,69 @@
         </div>
       </div>
     </div>
+
+    <div
+      class="modal fade"
+      ref="totpModal"
+      tabindex="-1"
+      aria-labelledby="totpModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="totpModalLabel">Activar 2FA</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="modal-body text-center">
+            <div v-if="!showQRCode">
+              <p>Haga clic en el botón para generar su código de activación de 2FA.</p>
+              <button @click="generateTotpSecret" class="btn btn-primary">Generar Código QR</button>
+            </div>
+            <div v-else>
+              <p>
+                Escanee el siguiente código QR con su aplicación de autenticación (ej. Google
+                Authenticator).
+              </p>
+              <div class="d-flex justify-content-center my-3">
+                <QRCodeVue3
+                  :value="totpUri"
+                  :width="200"
+                  :height="200"
+                  :qr-options="{ typeNumber: 0, mode: 'Byte', errorCorrectionLevel: 'H' }"
+                  :image-options="{ hideBackgroundDots: true, imageSize: 0.4, margin: 0 }"
+                  :dots-options="{ type: 'dots', color: '#2c3e50' }"
+                  :background-options="{ color: '#ffffff' }"
+                  :corners-square-options="{ type: 'square', color: '#2c3e50' }"
+                  :corners-dot-options="{ type: 'dot', color: '#2c3e50' }"
+                />
+              </div>
+              <p class="mt-3">
+                Luego, ingrese el código de 6 dígitos de la aplicación para confirmar:
+              </p>
+              <form @submit.prevent="enable2fa" class="d-flex flex-column align-items-center">
+                <input
+                  v-model="otpCode"
+                  type="text"
+                  class="form-control mb-3"
+                  maxlength="6"
+                  required
+                  placeholder="Código 2FA"
+                  style="max-width: 150px"
+                />
+                <button type="submit" class="btn btn-success">Activar 2FA</button>
+              </form>
+              <p v-if="totpAlert" class="text-danger mt-2">{{ totpAlert }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 </template>
 
@@ -120,9 +193,10 @@ import { makeQuery } from '@/services/api'
 import bootstrap from 'bootstrap/dist/js/bootstrap.bundle.min'
 import AlertC from '@/components/AlertC.vue'
 import router from '@/router'
+import QRCodeVue3 from 'qrcode-vue3'
 
 export default {
-  components: { AlertC },
+  components: { AlertC, QRCodeVue3 },
   data() {
     return {
       Profile: null,
@@ -130,8 +204,14 @@ export default {
       previewUrl: null,
       uploading: false,
       modalInstance: null,
+      totpModalInstance: null,
       alertMessage: '',
       alertColor: 'danger',
+      totpUri: null,
+      totpSecret: null,
+      otpCode: '',
+      showQRCode: false,
+      totpAlert: '',
     }
   },
   created() {
@@ -157,6 +237,12 @@ export default {
       }
       this.modalInstance.show()
     },
+    openTotpModal() {
+      if (!this.totpModalInstance) {
+        this.totpModalInstance = new bootstrap.Modal(this.$refs.totpModal)
+      }
+      this.totpModalInstance.show()
+    },
     onImageError(e) {
       e.target.src = `https://ui-avatars.com/api/?name=${this.Profile?.name || 'User'}&background=random`
     },
@@ -166,12 +252,12 @@ export default {
         const img = new Image()
         img.src = URL.createObjectURL(file)
         img.onload = () => {
-          if (img.width > 1000 || img.height > 1000) {
+          // ✅ Corregido: La validación de tamaño ahora es 500x500
+          if (img.width > 500 || img.height > 500) {
             this.showAlert('La imagen no debe superar 500x500 px.', 'danger')
             this.selectedFile = null
             this.previewUrl = null
           } else {
-            // Crear preview cuadrada recortada automáticamente
             const size = Math.min(img.width, img.height)
             const canvas = document.createElement('canvas')
             canvas.width = size
@@ -206,12 +292,10 @@ export default {
         const formData = new FormData()
         formData.append('file', this.selectedFile)
 
-        // Subir imagen
         const uploadResponse = await makeQuery('/Upload', 'POST', formData, true)
         const newImageUrl = uploadResponse.file_url
         console.log('Imagen subida:', newImageUrl)
 
-        // Actualizar perfil
         const updateResponse = await makeQuery('/profile/image', 'POST', {
           image: newImageUrl,
         })
@@ -225,6 +309,31 @@ export default {
         this.showAlert('Error al subir la imagen.' + error, 'danger')
       } finally {
         this.uploading = false
+      }
+    },
+    async generateTotpSecret() {
+      try {
+        const response = await makeQuery('/auth/generate-totp-secret', 'GET')
+        this.totpUri = response.data.totp_uri
+        this.totpSecret = response.data.totp_secret
+        this.showQRCode = true
+      } catch (error) {
+        this.totpAlert = 'Error al generar el código. Por favor, intente de nuevo.'
+      }
+    },
+    async enable2fa() {
+      try {
+        const response = await makeQuery('/auth/enable-2fa', 'POST', {
+          otp_code: this.otpCode,
+          totp_secret: this.totpSecret,
+        })
+
+        this.totpAlert = '¡2FA activado correctamente!'
+        this.Profile.totp_secret = this.totpSecret
+        this.totpModalInstance.hide()
+        this.showAlert('¡2FA activado correctamente!', 'success')
+      } catch (error) {
+        this.totpAlert = 'Código de 2FA inválido. Inténtelo de nuevo.'
       }
     },
     showAlert(message, color = 'danger') {
@@ -262,5 +371,20 @@ export default {
 
 .edit-overlay i {
   font-size: 1.5rem;
+}
+
+.modal-content {
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.modal-header {
+  border-bottom: none;
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+}
+
+.modal-body {
+  padding: 2rem;
 }
 </style>

@@ -19,9 +19,10 @@ class User
     public $profile_image;
     public $created_at;
     public $is_active;
+    public $totp_secret; // ✅ Agregada la propiedad totp_secret
 
     //Constructor
-    public function __construct($id = null, $name = null, $username = null, $password = null, $phone = null, $rol = null, $profile_image = null, $created_at = null, $is_active = null)
+    public function __construct($id = null, $name = null, $username = null, $password = null, $phone = null, $rol = null, $profile_image = null, $created_at = null, $is_active = null, $totp_secret = null) // ✅ Agregado el parámetro totp_secret
     {
         $this->id = $id;
         $this->name = $name;
@@ -32,6 +33,7 @@ class User
         $this->profile_image = $profile_image;
         $this->created_at = $created_at;
         $this->is_active = $is_active;
+        $this->totp_secret = $totp_secret; // ✅ Asignado el valor a la propiedad
     }
 
     //Funciones
@@ -53,6 +55,7 @@ class User
             $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
             foreach ($users as $key => $user) {
                 unset($users[$key]['password']);
+                unset($users[$key]['totp_secret']); // ✅ Se elimina el secreto TOTP de la respuesta
             }
             return $users;
         } catch (PDOException $e) {
@@ -96,6 +99,11 @@ class User
             $stmt->execute();
             $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+            // ✅ Se elimina el secreto TOTP de la respuesta
+            foreach ($users as $key => $user) {
+                unset($users[$key]['totp_secret']);
+            }
+
             return $users;
         } catch (PDOException $e) {
             throw new Exception("Error al obtener los usuarios: " . $e->getMessage());
@@ -137,7 +145,7 @@ class User
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($result) {
-                return new self($result['id'], $result['name'], $result['username'], $result['password'], $result['phone'], $result['rol'], $result['profile_image'], $result['created_at'], $result['is_active']);
+                return new self($result['id'], $result['name'], $result['username'], $result['password'], $result['phone'], $result['rol'], $result['profile_image'], $result['created_at'], $result['is_active'], $result['totp_secret']); // ✅ Se pasa el totp_secret al constructor
             }
             return null;
         } catch (PDOException $e) {
@@ -151,7 +159,7 @@ class User
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = 'INSERT INTO users (name, username, password, phone, rol, is_active) VALUES (:name, :username, :password, :phone, :rol, :is_active)';
+            $query = 'INSERT INTO users (name, username, password, phone, rol, is_active, profile_image, totp_secret) VALUES (:name, :username, :password, :phone, :rol, :is_active, :profile_image, :totp_secret)'; // ✅ Agregadas las columnas profile_image y totp_secret
             $stmt = $connection->prepare($query);
             $stmt->bindParam(':name', $user->name);
             $stmt->bindParam(':username', $user->username);
@@ -159,6 +167,8 @@ class User
             $stmt->bindParam(':phone', $user->phone);
             $stmt->bindParam(':rol', $user->rol);
             $stmt->bindParam(':is_active', $user->is_active);
+            $stmt->bindParam(':profile_image', $user->profile_image); // ✅ Se agregó el bindParam para profile_image
+            $stmt->bindParam(':totp_secret', $user->totp_secret); // ✅ Se agregó el bindParam para totp_secret
             $stmt->execute();
             $user->id = $connection->lastInsertId();
             return $user;
@@ -173,7 +183,7 @@ class User
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = 'UPDATE users SET name = :name, username = :username, password = :password, phone = :phone, rol = :rol, profile_image = :profile_image ,is_active = :is_active WHERE id = :id';
+            $query = 'UPDATE users SET name = :name, username = :username, password = :password, phone = :phone, rol = :rol, profile_image = :profile_image ,is_active = :is_active, totp_secret = :totp_secret WHERE id = :id'; // ✅ Agregada la columna totp_secret en el UPDATE
             $stmt = $connection->prepare($query);
             $stmt->bindParam(':id', $user->id);
             $stmt->bindParam(':name', $user->name);
@@ -183,6 +193,7 @@ class User
             $stmt->bindParam(':profile_image', $user->profile_image);
             $stmt->bindParam(':rol', $user->rol);
             $stmt->bindParam(':is_active', $user->is_active);
+            $stmt->bindParam(':totp_secret', $user->totp_secret); // ✅ Se agregó el bindParam para totp_secret
             $stmt->execute();
             return $user;
         } catch (PDOException $e) {
@@ -206,7 +217,6 @@ class User
         }
     }
 
-    //Get user by username
     public static function GetByUsername($username)
     {
         try {
@@ -218,7 +228,19 @@ class User
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($result) {
-                return new self($result['id'], $result['name'], $result['username'], $result['password'], $result['phone'], $result['rol'], $result['profile_image'], $result['created_at'], $result['is_active']);
+
+                return new self(
+                    $result['id'],
+                    $result['name'],
+                    $result['username'],
+                    $result['password'],
+                    $result['phone'],
+                    $result['rol'],
+                    $result['profile_image'],
+                    $result['created_at'],
+                    $result['is_active'],
+                    $result['totp_secret'] // Asegúrate de que este campo exista en la BD.
+                );
             }
             return null;
         } catch (PDOException $e) {
@@ -239,7 +261,8 @@ class User
             $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $result = [];
             foreach ($users as $user) {
-                $userModel = new self($user['id'], $user['name'], $user['username'], null, $user['phone'], $user['rol'], $user['profile_image'], $user['created_at'], $user['is_active']);
+                // ✅ Se elimina el secreto TOTP de la respuesta para seguridad
+                $userModel = new self($user['id'], $user['name'], $user['username'], null, $user['phone'], $user['rol'], $user['profile_image'], $user['created_at'], $user['is_active'], null);
                 unset($userModel->password);
                 $result[] = $userModel;
             }

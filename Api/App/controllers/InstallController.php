@@ -20,10 +20,8 @@ class InstallController
         );
     }
 
-    //Status() return the status of the installation
     public function status()
     {
-        //update or create htaacces file
         $this->setHtaccess();
         $envPath = __DIR__ . '/../../.env';
         if (!file_exists($envPath)) {
@@ -47,29 +45,31 @@ class InstallController
     public function install()
     {
         try {
-            // Obtener datos desde la petición
             $data = Flight::request()->data->getData();
 
-            // Definir valores con fallback
             $dbHost = $data['DB_HOST'] ?? null;
             $dbName = $data['DB_NAME'] ?? 'bookify';
             $dbUser = $data['DB_USER'] ?? null;
-            $dbPassword = $data['DB_PASSWORD'] ?? ''; // Puede estar vacío
+            $dbPassword = $data['DB_PASSWORD'] ?? '';
             $jwtSecret = $data['JWT_SECRET'] ?? bin2hex(random_bytes(32));
             $jwtAlgorithm = $data['JWT_ALGORITHM'] ?? 'HS256';
             $jwtExpiration = $data['JWT_EXPIRATION'] ?? 3600;
 
+            $adminName = $data['admin_name'] ?? null;
+            $adminUsername = $data['admin_username'] ?? null;
+            $adminPassword = $data['admin_password'] ?? null;
+            $adminPhone = $data['admin_phone'] ?? null;
+
             if (empty($data)) {
                 return $this->failed(null, "No data provided", 400);
             }
-            $requiredFields = ['DB_HOST', 'DB_USER'];
+            $requiredFields = ['DB_HOST', 'DB_USER', 'admin_name', 'admin_username', 'admin_password', 'admin_phone'];
             foreach ($requiredFields as $field) {
                 if (empty($data[$field])) {
                     return $this->failed(null, "Field '$field' is required", 400);
                 }
             }
 
-            // Obtener BASE_URL dinámicamente
             $request = Flight::request();
             $scheme = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
             $host = $_SERVER['HTTP_HOST'];
@@ -77,30 +77,25 @@ class InstallController
 
             $baseUrl = "{$scheme}://{$host}{$basePath}";
 
-            // Ruta del archivo .env
             $envPath = __DIR__ . '/../../.env';
 
             if (!file_exists($envPath)) {
                 file_put_contents($envPath, "");
             }
 
-            // Obtener la fecha y hora actual
             $date = date('Y-m-d H:i:s');
 
-            // Conectar al servidor MySQL (sin especificar la base de datos aún)
             $dsn = "mysql:host=$dbHost;";
             $pdo = new PDO($dsn, $dbUser, $dbPassword, [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
             ]);
 
-            // Verificar si la base de datos ya existe
             $stmt = $pdo->query("SHOW DATABASES LIKE '$dbName'");
             $dbExists = $stmt->fetch();
 
             if (!$dbExists) {
                 $pdo->exec("CREATE DATABASE `$dbName` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
 
-                // Leer y ejecutar el script de instalación
                 $sqlFile = __DIR__ . "/../database/DB.sql";
                 if (!file_exists($sqlFile)) {
                     return $this->failed(null, 'Archivo DB.SQL no encontrado.', 500);
@@ -112,10 +107,22 @@ class InstallController
                 $pdo->exec($sql);
             }
 
-            // Configurar y escribir el .htaccess
+            // ✅ CORREGIDO: SELECCIONAR LA BASE DE DATOS ANTES DE INSERTAR EL USUARIO
+            $pdo->exec("USE `$dbName`");
+
+            $hashedPassword = password_hash($adminPassword, PASSWORD_BCRYPT);
+            $query = "INSERT INTO users (name, username, password, phone, rol, is_active) VALUES (:name, :username, :password, :phone, :rol, :is_active)";
+            $stmt = $pdo->prepare($query);
+            $stmt->bindValue(':name', $adminName);
+            $stmt->bindValue(':username', $adminUsername);
+            $stmt->bindValue(':password', $hashedPassword);
+            $stmt->bindValue(':phone', $adminPhone);
+            $stmt->bindValue(':rol', 1);
+            $stmt->bindValue(':is_active', 1);
+            $stmt->execute();
+
             $this->setHtaccess();
 
-            // Formatear el contenido del .env
             $envContent = "
 # ==========================================
 # CONFIGURACIÓN DE LA BASE DE DATOS
@@ -152,18 +159,12 @@ IS_INSTALLED=TRUE
         }
     }
 
-    /**
-     * Crea o actualiza el archivo .htaccess con la configuración adecuada.
-     */
     public function setHtaccess()
     {
         $htaccessPath = __DIR__ . '/../../.htaccess';
-
-        // Obtener la ruta base del proyecto dinámicamente
         $baseDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
         $baseDir = strtolower(rtrim($baseDir, '/') . '/');
 
-        // Contenido esperado del .htaccess
         $htaccessContent = <<<HTACCESS
 <IfModule mod_rewrite.c>
     RewriteEngine On
@@ -174,7 +175,6 @@ IS_INSTALLED=TRUE
 </IfModule>
 HTACCESS;
 
-        // Verificar si es necesario actualizar el archivo
         if (!file_exists($htaccessPath) || strpos(file_get_contents($htaccessPath), "RewriteBase {$baseDir}") === false) {
             file_put_contents($htaccessPath, $htaccessContent);
         }

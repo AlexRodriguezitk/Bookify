@@ -70,6 +70,7 @@ class TicketController
             if ($asesor) {
                 // Clear sensitive information
                 unset($asesor->password, $asesor->phone);
+                unset($asesor->totp_secret);
                 $ticket->asesor = $asesor;
             } else {
                 $ticket->asesor = null;
@@ -77,6 +78,7 @@ class TicketController
             $client = User::get($ticket->client);
             if ($client) {
                 // Clear sensitive information
+                unset($client->totp_secret);
                 unset($client->password);
                 $ticket->client = $client;
             } else {
@@ -116,7 +118,7 @@ class TicketController
             return;
         }
         //ticket Required Fields
-        $requiredFields = ['title', 'description', 'category', 'custom_values'];
+        $requiredFields = ['title', 'description', 'category'];
         //CT_Values Required Fields
         $requiredFieldsValues = ['custom_field_id', 'value'];
 
@@ -153,9 +155,12 @@ class TicketController
             !empty($data['asesor']) ? $data['asesor'] : null // asesor
         );
         $ticket = Ticket::create($ticket);
-        foreach ($data['custom_values'] as $value) {
-            $custom_value = new CT_Values(null, $value['custom_field_id'], $ticket->id, $value['value']);
-            $custom_value = CT_Values::create($custom_value);
+        // Comprueba si 'custom_values' existe y si es un array.
+        if (isset($data['custom_values']) && is_array($data['custom_values'])) {
+            foreach ($data['custom_values'] as $value) {
+                $custom_value = new CT_Values(null, $value['custom_field_id'], $ticket->id, $value['value']);
+                $custom_value = CT_Values::create($custom_value);
+            }
         }
 
         $this->saveLog($AuthUser->id, 'TICKET_CREATED', 'TICKET WAS CREATED SUCCESSFULLY: ' . $ticket->title);
@@ -319,8 +324,8 @@ class TicketController
                 $ticket->asesor = User::get($ticket->asesor);
                 $ticket->client = User::get($ticket->client);
                 //Clear sensitive information
-                unset($ticket->asesor->password, $ticket->asesor->phone);
-                unset($ticket->client->password);
+                unset($ticket->asesor->password, $ticket->asesor->phone, $ticket->asesor->totp_secret);
+                unset($ticket->client->password, $ticket->client->totp_secret);
             }
             $this->success(['tickets' => $tickets, 'pagination' => ['page' => $page, 'limit' => $limit, 'total' => $total, 'total_pages' => $pages]], 'Tickets list', 200);
         } else {
@@ -329,8 +334,8 @@ class TicketController
                 $ticket->asesor = User::get($ticket->asesor);
                 $ticket->client = User::get($ticket->client);
                 //Clear sensitive information
-                unset($ticket->asesor->password, $ticket->asesor->phone);
-                unset($ticket->client->password);
+                unset($ticket->asesor->password, $ticket->asesor->phone, $ticket->asesor->totp_secret);
+                unset($ticket->client->password, $ticket->client->totp_secret);
             }
             $this->success(['tickets' => $tickets], 'Tickets list', 200);
         }
