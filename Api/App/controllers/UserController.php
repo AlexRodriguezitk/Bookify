@@ -72,6 +72,7 @@ class UserController
         $user = User::get($id);
         if ($user) {
             unset($user->password);
+            unset($user->totp_secret);
             $this->success([$user], 'User found', 200);
         } else {
             $this->failed(null, 'User not found', 404);
@@ -198,8 +199,7 @@ class UserController
         }
     }
 
-    //Auth
-    public function login()
+    public function loginPassword()
     {
         $data = Flight::request()->data->getData();
         if (empty($data)) {
@@ -214,10 +214,19 @@ class UserController
                 return;
             }
         }
+
         $user = User::getByUsername($data['username']);
+
         if ($user && password_verify($data['password'], $user->password) && $user->is_active == 1) {
+
+            // ✅ Corregido: Si el usuario tiene 2FA, se anida la respuesta para que el frontend la reciba correctamente.
+            if ($user->totp_secret) {
+                $this->success(['2fa_required' => true, 'username' => $user->username], '2FA required', 200);
+                return;
+            }
+
+            // Si no tiene 2FA, el login continúa como antes
             $token = \App\Auth::generateToken($user->id, $user->rol);
-            //Set Flight::set('user', $user);
             Flight::set('user', $user);
             $this->saveLog($user->id, 'USER_LOGIN', 'USER WAS LOGGED IN SUCCESSFULLY: ' . $user->name);
             $this->setJwtBearerToken($token);
@@ -226,6 +235,47 @@ class UserController
             $this->success(['token' => $token, 'user' => $user], 'Login successful', 200);
         } else {
             $this->failed(null, 'Invalid credentials', 401);
+        }
+    }
+
+    public function loginVerify2fa()
+    {
+        $data = Flight::request()->data->getData();
+
+        if (empty($data['username']) || empty($data['otp_code'])) {
+            $this->failed(null, "Username and OTP code are required", 400);
+            return;
+        }
+
+        $user = User::getByUsername($data['username']);
+
+        if (!$user || $user->is_active == 0) {
+            $this->failed(null, 'Invalid credentials', 401);
+            return;
+        }
+
+        // Verificar si el usuario tiene un secreto 2FA
+        if (empty($user->totp_secret)) {
+            $this->failed(null, '2FA not enabled for this user', 401);
+            return;
+        }
+
+        // ✅ Implementación de 2FA: Verificar el código OTP
+        $totp = \OTPHP\TOTP::create($user->totp_secret);
+        $isValid = $totp->verify($data['otp_code']);
+
+        if ($isValid) {
+            // Si el código es válido, genera el token JWT y completa el login
+            $token = \App\Auth::generateToken($user->id, $user->rol);
+            Flight::set('user', $user);
+            $this->saveLog($user->id, 'USER_LOGIN_2FA', 'USER WAS LOGGED IN WITH 2FA: ' . $user->name);
+            $this->setJwtBearerToken($token);
+            $rol = Rol::Get($user->rol);
+            $user->rol = $rol;
+            unset($user->totp_secret);
+            $this->success(['token' => $token, 'user' => $user], 'Login successful', 200);
+        } else {
+            $this->failed(null, 'Invalid OTP code', 401);
         }
     }
 
@@ -264,7 +314,6 @@ class UserController
 
     public function register()
     {
-
         $data = Flight::request()->data->getData();
         if (empty($data)) {
             $this->failed(null, "No data provided", 400);
@@ -278,6 +327,7 @@ class UserController
                 return;
             }
         }
+
         $user = User::getByUsername($data['username']);
         if ($user) {
             $this->failed(null, 'Username already exists', 400);
@@ -285,16 +335,93 @@ class UserController
         }
 
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
-        $user = new User(null, $data['name'], $data['username'], $data['password'], $data['phone'], 2, null, null, 1);
+
+        // ✅ NO se genera el TOTP secret aquí. Se deja como NULL.
+        $user = new User(null, $data['name'], $data['username'], $data['password'], $data['phone'], 2, null, null, 1, null);
         $user = User::create($user);
-        //Loging and return JWT
+
         $token = \App\Auth::generateToken($user->id, $user->rol);
         $this->setJwtBearerToken($token);
+
         $rol = Rol::Get($user->rol);
         $user->rol = $rol;
+
         $this->saveLog($user->id, 'USER_REGISTERED', 'USER WAS REGISTERED SUCCESSFULLY: ' . $user->name);
-        $this->success([$user], 'User registered', 201);
+
+        // ✅ La respuesta de registro ya no incluye el URI de TOTP.
+        $this->success(['user' => $user, 'token' => $token], 'User registered', 201);
     }
+
+    public function generateTotpSecret()
+    {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.ACTIVATE')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
+
+        // Solo se permite a usuarios autenticados acceder a esta función
+        $user = User::Get($AuthUser->id);
+        if (!$user) {
+            $this->failed(null, 'Unauthorized', 401);
+            return;
+        }
+
+        // Corregido: Validar que el nombre de usuario no esté vacío
+        if (empty($user->username)) {
+            $this->failed(null, 'Username is not set for the authenticated user.', 500);
+            return;
+        }
+
+        $totp = \OTPHP\TOTP::create();
+        $totpSecret = $totp->getSecret();
+
+        // ✅ CORREGIDO: Construir el URI manualmente para evitar el error de la librería.
+        $issuer = 'Bookify';
+        $label = urlencode($user->username);
+        $totpUri = "otpauth://totp/{$issuer}:{$label}?secret={$totpSecret}&issuer={$issuer}";
+
+        // Devolver el URI para el código QR y el secreto para validación posterior
+        $this->success(['totp_uri' => $totpUri, 'totp_secret' => $totpSecret], 'New TOTP secret generated', 200);
+    }
+
+    public function enable2fa()
+    {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser) {
+            $this->failed(null, 'Unauthorized', 401);
+            return;
+        }
+
+        $data = Flight::request()->data->getData();
+        if (empty($data['otp_code']) || empty($data['totp_secret'])) {
+            $this->failed(null, 'OTP code and TOTP secret are required', 400);
+            return;
+        }
+
+        // ✅ CORREGIDO: Obtener el objeto User completo desde la base de datos
+        $user = User::Get($AuthUser->id);
+        if (!$user) {
+            $this->failed(null, 'User not found', 404);
+            return;
+        }
+
+        // Validar el código TOTP proporcionado con el secreto temporal
+        $totp = \OTPHP\TOTP::create($data['totp_secret']);
+        if (!$totp->verify($data['otp_code'])) {
+            $this->failed(null, 'Invalid OTP code', 401);
+            return;
+        }
+
+        // ✅ La validación fue exitosa, ahora se puede guardar el secreto en el perfil del usuario
+        $user->totp_secret = $data['totp_secret'];
+        User::Update($user);
+
+        $this->saveLog($user->id, '2FA_ENABLED', '2FA WAS ACTIVATED SUCCESSFULLY');
+
+        $this->success([null], '2FA has been successfully enabled', 200);
+    }
+
 
     public function Profile()
     {
@@ -307,6 +434,7 @@ class UserController
         $user->rol = Rol::Get($user->rol);
         if ($user) {
             unset($user->password);
+            $user->totp_secret = $user->totp_secret ? true : false;
             $this->success([$user], 'User found', 200);
         } else {
             $this->failed(null, 'User not found', 404);

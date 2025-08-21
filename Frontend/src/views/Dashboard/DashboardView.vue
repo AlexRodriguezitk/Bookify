@@ -1,6 +1,5 @@
 <template>
   <div class="app-container h-100">
-    <!-- Sidebar con imagen de perfil -->
     <Sidebar
       :profileImage="userProfileImage"
       :Username="Profile"
@@ -8,32 +7,46 @@
       :secondaryLinks="secondaryLinks"
     />
 
-    <!-- Contenido Principal -->
     <div class="content">
       <RouterView />
 
-      <!-- Contenido exclusivo de /dashboard -->
-      <div v-if="$route.path.toLowerCase() === '/dashboard'" class="mt-4">
-        <div class="container">
-          <h1 class="mb-3">Bienvenido al portal de Bookify</h1>
-          <p class="lead">A continuación, selecciona una categoría para crear un nuevo ticket:</p>
+      <div v-if="$route.path.toLowerCase() === '/dashboard'" class="dashboard-content">
+        <div class="text-center mb-5">
+          <h1 class="display-4 fw-bold text-dark mb-2">¡Hola! ¿En qué podemos ayudarte?</h1>
+          <p class="lead text-muted">
+            Selecciona una categoría a continuación para iniciar el proceso de creación de un ticket
+            de soporte.
+          </p>
+        </div>
 
-          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mt-3">
-            <div v-for="category in categories" :key="category.id" class="col">
-              <RouterLink :to="`/portal/${category.id}`" class="text-decoration-none text-dark">
-                <div class="card h-100">
-                  <div class="card-body text-center">
-                    <i class="fas fa-folder-open fa-2x text-primary mb-3"></i>
-                    <h5 class="card-title">{{ category.name }}</h5>
-                  </div>
-                </div>
-              </RouterLink>
+        <div v-if="loading" class="text-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+
+        <div
+          v-else-if="categories.length > 0"
+          class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4"
+        >
+          <div v-for="category in categories" :key="category.id" class="col">
+            <div class="card h-100 shadow-sm border-0 transition-hover">
+              <div class="card-body d-flex flex-column text-center p-4">
+                <i class="fas fa-folder-open fa-2x text-primary mb-3"></i>
+                <h5 class="card-title fw-bold text-primary mb-2">{{ category.name }}</h5>
+                <p class="card-text text-muted flex-grow-1">
+                  {{ category.description }}
+                </p>
+                <router-link :to="`/portal/${category.id}`" class="btn btn-primary mt-3">
+                  Crear Ticket
+                </router-link>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div v-if="categories.length === 0" class="alert alert-info mt-4">
-            <i class="fas fa-info-circle me-2"></i> No hay categorías disponibles.
-          </div>
+        <div v-else class="text-center my-5">
+          <p class="text-muted">No hay categorías de tickets disponibles en este momento.</p>
         </div>
       </div>
     </div>
@@ -53,6 +66,7 @@ export default {
       mainLinks: [],
       secondaryLinks: [],
       categories: [],
+      loading: true,
     }
   },
   computed: {
@@ -117,11 +131,14 @@ export default {
   },
   methods: {
     async fetchCategories() {
+      this.loading = true
       try {
         const response = await makeQuery('/categories', 'GET')
         this.categories = response.data || []
       } catch (error) {
         console.error('Error fetching categories:', error)
+      } finally {
+        this.loading = false
       }
     },
   },
@@ -143,5 +160,28 @@ export default {
   .content {
     margin-left: 0;
   }
+}
+
+.dashboard-content {
+  padding-top: 20px;
+}
+
+.transition-hover {
+  transition:
+    transform 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+}
+
+.transition-hover:hover {
+  transform: translateY(-0.5rem);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.card {
+  border-radius: 0.75rem; /* Bordes más redondeados */
+}
+
+.card-title {
+  font-weight: 600; /* Fuente más gruesa para los títulos */
 }
 </style>

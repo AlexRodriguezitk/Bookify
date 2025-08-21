@@ -33,12 +33,25 @@ const register = async () => {
   }
 
   try {
-    await AuthService.register(name.value, username.value, password.value, phone.value)
-    successMessage.value = 'Registro exitoso. Redirigiendo a inicio...'
-    setTimeout(() => router.push('/'), 2000)
+    const response = await AuthService.register(
+      name.value,
+      username.value,
+      password.value,
+      phone.value,
+    )
+
+    // ✅ Corregido: Ya no se hace login automático
+    if (response.status) {
+      successMessage.value = '¡Registro exitoso! Ahora puede iniciar sesión.'
+      setTimeout(() => router.push('/login'), 2000)
+    }
   } catch (error) {
     console.error('Registration failed:', error)
-    errorMessage.value = 'Error en el registro'
+    if (error.response && error.response.data && error.response.data.message) {
+      errorMessage.value = error.response.data.message
+    } else {
+      errorMessage.value = 'Error en el registro'
+    }
   }
 }
 </script>

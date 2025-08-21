@@ -191,7 +191,8 @@ CREATE TABLE `users` (
   `phone` varchar(15) NOT NULL,
   `rol` int(11) DEFAULT 2 NULL,
   `profile_image` varchar(255) DEFAULT NULL,
-  `created_at` datetime DEFAULT current_timestamp(),	
+  `created_at` datetime DEFAULT current_timestamp(),
+  `totp_secret` varchar(255) DEFAULT NULL,
   `is_active` tinyint(1) DEFAULT 1
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -507,10 +508,10 @@ ON DUPLICATE KEY UPDATE id=id;
 SET @admin_role_id = (SELECT id FROM roles WHERE name='Admin' LIMIT 1);
 SET @dummy_role_id = (SELECT id FROM roles WHERE name='Dummy' LIMIT 1);
 
--- Insertar el usuario administrador si no existe
-INSERT INTO users (name, username, password, phone, rol, is_active) 
-VALUES ('root', 'root', '$2a$12$cjBqcM4DP3CZWv9bMBnIpOwcJTsC058bIe/5zqVWZD6xqoqCMusf.', '0', @admin_role_id, 1)
-ON DUPLICATE KEY UPDATE password=VALUES(password), phone=VALUES(phone), rol=VALUES(rol), is_active=VALUES(is_active);
+-- -- Insertar el usuario administrador si no existe
+-- INSERT INTO users (name, username, password, phone, rol, is_active) 
+-- VALUES ('root', 'root', '$2a$12$cjBqcM4DP3CZWv9bMBnIpOwcJTsC058bIe/5zqVWZD6xqoqCMusf.', '0', @admin_role_id, 1)
+-- ON DUPLICATE KEY UPDATE password=VALUES(password), phone=VALUES(phone), rol=VALUES(rol), is_active=VALUES(is_active);
 
 -- Insertar el permiso ALL si no existe
 INSERT INTO permissions (name, description) 

@@ -1,34 +1,30 @@
 <template>
-  <div class="container mt-4">
-    <!-- Loader -->
-    <div v-if="loading" class="text-center my-5">
+  <div class="container my-5">
+    <div v-if="loading" class="text-center py-5">
       <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Cargando...</span>
       </div>
     </div>
 
-    <!-- ✅ Vista después de crear ticket -->
-    <div v-else-if="ticketCreated">
-      <div class="card shadow-sm p-4 text-center">
-        <h2 class="text-success mb-3">✅ Gracias por enviar el ticket</h2>
-        <p class="mb-3">
-          Hemos recibido tu solicitud correctamente. Puedes dar seguimiento con el siguiente enlace:
-        </p>
-        <a :href="`/follow/${ticketCreated.id}`" class="btn btn-outline-primary">
-          Ver seguimiento del ticket
-        </a>
-      </div>
+    <AlertC v-if="alertMessage" :message="alertMessage" :color="alertColor" />
+
+    <div v-if="ticketCreated" class="card shadow-sm p-5 text-center">
+      <h2 class="text-success fw-bold mb-3">Ticket enviado</h2>
+      <p class="mb-4 lead">
+        Tu solicitud ha sido recibida correctamente. Puedes dar seguimiento con el siguiente enlace:
+      </p>
+      <a :href="`/follow/${ticketCreated.id}`" class="btn btn-primary btn-lg">
+        Ver seguimiento del ticket
+      </a>
     </div>
 
-    <!-- Formulario -->
     <div v-else>
-      <h1 class="mb-4 text-dark">Crear ticket: {{ category?.name || 'Sin categoría' }}</h1>
+      <h1 class="mb-4 text-dark fw-bold">Crear ticket: {{ category?.name || 'Sin categoría' }}</h1>
 
       <form @submit.prevent="openConfirmModal" class="card p-4 shadow-sm">
-        <!-- Sección: campos base -->
         <div class="mb-4">
           <div class="mb-3">
-            <label for="title" class="form-label">Título</label>
+            <label for="title" class="form-label fw-bold">Título</label>
             <input
               type="text"
               id="title"
@@ -40,13 +36,13 @@
           </div>
 
           <div class="mb-3">
-            <label for="description" class="form-label">Descripción</label>
+            <label for="description" class="form-label fw-bold">Descripción</label>
             <textarea
               id="description"
               v-model="form.description"
               class="form-control"
-              rows="3"
-              placeholder="Describa el problema"
+              rows="4"
+              placeholder="Describa el problema en detalle"
               required
             ></textarea>
           </div>
@@ -54,21 +50,18 @@
 
         <hr />
 
-        <!-- Sección: campos dinámicos -->
-        <div>
+        <div v-if="fields.length > 0">
+          <h4 class="mb-3 fw-bold">Detalles adicionales</h4>
           <div v-for="field in paginatedFields" :key="field.id" class="mb-3">
             <label class="form-label">{{ field.name }}</label>
 
-            <!-- Campo tipo TEXT -->
             <textarea
               v-if="field.type === 'TEXT'"
               class="form-control"
               rows="3"
-              style="resize: vertical"
               v-model="dynamicValues[field.id]"
             ></textarea>
 
-            <!-- Campo tipo NUMBER -->
             <input
               v-else-if="field.type === 'NUMBER'"
               type="number"
@@ -76,7 +69,6 @@
               v-model="dynamicValues[field.id]"
             />
 
-            <!-- Campo tipo DATE -->
             <input
               v-else-if="field.type === 'DATE'"
               type="date"
@@ -84,16 +76,14 @@
               v-model="dynamicValues[field.id]"
             />
 
-            <!-- Campo tipo BOOLEAN -->
-            <div v-else-if="field.type === 'BOOLEAN'" class="form-check">
+            <div v-else-if="field.type === 'BOOLEAN'" class="form-check form-switch">
               <input type="checkbox" class="form-check-input" v-model="dynamicValues[field.id]" />
               <label class="form-check-label">Sí / No</label>
             </div>
           </div>
         </div>
 
-        <!-- Paginación -->
-        <div class="d-flex justify-content-center mt-3">
+        <div v-if="totalPages > 1" class="d-flex justify-content-center mt-3">
           <nav>
             <ul class="pagination">
               <li
@@ -102,12 +92,7 @@
                 :key="page"
                 :class="{ active: currentPage === page }"
               >
-                <button
-                  type="button"
-                  class="page-link rounded-circle mx-1"
-                  style="width: 40px; height: 40px; text-align: center"
-                  @click="changePage(page)"
-                >
+                <button type="button" class="page-link" @click="changePage(page)">
                   {{ page }}
                 </button>
               </li>
@@ -115,18 +100,16 @@
           </nav>
         </div>
 
-        <!-- Botón enviar -->
         <div class="text-end">
-          <button type="submit" class="btn btn-primary mt-3">Crear Ticket</button>
+          <button type="submit" class="btn btn-primary btn-lg mt-3">Crear Ticket</button>
         </div>
       </form>
     </div>
 
-    <!-- Modal de confirmación -->
     <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-          <div class="modal-header">
+          <div class="modal-header bg-light">
             <h5 class="modal-title">Confirmar creación</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
@@ -146,9 +129,11 @@
 <script>
 import { makeQuery } from '@/services/api'
 import { Modal } from 'bootstrap'
+import AlertC from '@/components/AlertC.vue'
 
 export default {
   name: 'PortalView',
+  components: { AlertC },
   data() {
     return {
       form: {
@@ -161,7 +146,9 @@ export default {
       loading: true,
       currentPage: 1,
       fieldsPerPage: 5,
-      ticketCreated: null, // ✅ Guardamos el ticket creado
+      ticketCreated: null,
+      alertMessage: '',
+      alertColor: '',
     }
   },
   computed: {
@@ -197,7 +184,7 @@ export default {
             }
           }
           return acc
-        }, [])
+        }, []) // Se corrigió para que sea un array vacío, no null
 
         const payload = {
           ...this.form,
@@ -209,22 +196,30 @@ export default {
 
         const response = await makeQuery('/tickets', 'POST', payload)
 
-        // ✅ Guardamos ticket creado para mostrar la vista de agradecimiento
         this.ticketCreated = response.data[0]
-
+        this.showAlert('Ticket creado con éxito', 'success')
         this.closeConfirmModal()
       } catch (error) {
         console.error('Error creando ticket:', error)
-        alert('❌ Error al crear ticket')
+        this.showAlert('Error al crear el ticket', 'danger')
       }
     },
     async fetchCategory() {
       try {
         const category_id = this.$route.params.id
         const response = await makeQuery(`/categories/${category_id}`, 'GET')
-        this.category = response.data[0]
+
+        // Verifica si la categoría fue encontrada
+        if (response.data && response.data.length > 0) {
+          this.category = response.data[0]
+        } else {
+          // Si no hay datos, redirige al dashboard
+          this.$router.push('/dashboard')
+        }
       } catch (error) {
         console.error(error)
+        // En caso de un error en la solicitud (ej. 404), redirige al dashboard
+        this.$router.push('/dashboard')
       } finally {
         this.loading = false
       }
@@ -249,6 +244,13 @@ export default {
       const modalEl = document.getElementById('confirmModal')
       const modal = Modal.getInstance(modalEl)
       modal.hide()
+    },
+    showAlert(message, color) {
+      this.alertMessage = message
+      this.alertColor = color
+      setTimeout(() => {
+        this.alertMessage = ''
+      }, 3000)
     },
   },
 }
