@@ -11,6 +11,31 @@
     <!-- Contenido Principal -->
     <div class="content">
       <RouterView />
+
+      <!-- Contenido exclusivo de /dashboard -->
+      <div v-if="$route.path.toLowerCase() === '/dashboard'" class="mt-4">
+        <div class="container">
+          <h1 class="mb-3">Bienvenido al portal de Bookify</h1>
+          <p class="lead">A continuación, selecciona una categoría para crear un nuevo ticket:</p>
+
+          <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 mt-3">
+            <div v-for="category in categories" :key="category.id" class="col">
+              <RouterLink :to="`/portal/${category.id}`" class="text-decoration-none text-dark">
+                <div class="card h-100">
+                  <div class="card-body text-center">
+                    <i class="fas fa-folder-open fa-2x text-primary mb-3"></i>
+                    <h5 class="card-title">{{ category.name }}</h5>
+                  </div>
+                </div>
+              </RouterLink>
+            </div>
+          </div>
+
+          <div v-if="categories.length === 0" class="alert alert-info mt-4">
+            <i class="fas fa-info-circle me-2"></i> No hay categorías disponibles.
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -19,6 +44,7 @@
 import Sidebar from '@/components/SideBarC.vue'
 import Permissions from '@/services/permissions'
 import { useUserStore } from '@/stores/user'
+import { makeQuery } from '@/services/api'
 
 export default {
   components: { Sidebar },
@@ -26,16 +52,16 @@ export default {
     return {
       mainLinks: [],
       secondaryLinks: [],
+      categories: [],
     }
   },
   computed: {
-    // ✅ Computed para traer la imagen del store
     userProfileImage() {
       const userStore = useUserStore()
       return (
         userStore.profile_image ||
         `https://ui-avatars.com/api/?name=${userStore.name}&background=random`
-      ) // fallback si no hay imagen
+      )
     },
     Profile() {
       const userStore = useUserStore()
@@ -77,26 +103,45 @@ export default {
         url: '/logout',
       },
     ].filter(Boolean)
+
+    if (this.$route.path.toLowerCase() === '/dashboard') {
+      this.fetchCategories()
+    }
+  },
+  watch: {
+    '$route.path'(newPath) {
+      if (newPath.toLowerCase() === '/dashboard') {
+        this.fetchCategories()
+      }
+    },
+  },
+  methods: {
+    async fetchCategories() {
+      try {
+        const response = await makeQuery('/categories', 'GET')
+        this.categories = response.data || []
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+      }
+    },
   },
 }
 </script>
 
 <style scoped>
-/* Contenedor principal */
 .app-container {
   display: flex;
 }
 
-/* Contenido principal */
 .content {
   flex-grow: 1;
   padding: 20px;
-  margin-left: 70px; /* Espacio para el sidebar */
+  margin-left: 70px;
 }
 
 @media (max-width: 768px) {
   .content {
-    margin-left: 0px; /* Sin margen en pantallas pequeñas */
+    margin-left: 0;
   }
 }
 </style>

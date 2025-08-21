@@ -132,7 +132,8 @@ Flight::group('/tickets', function () {
     Flight::route('POST /', [new TicketController(), 'store']);
     Flight::route('PUT /@id', [new TicketController(), 'update']);
     Flight::route('DELETE /@id', [new TicketController(), 'destroy']);
-    Flight::route('GET /@id/assign/@userId', [new TicketController(), 'assing']);
+    Flight::route('PUT /@id/transfer', [new TicketController(), 'transfer']);
+    Flight::route('PUT /@id/transfer/@userId', [new TicketController(), 'transfer']);
 });
 
 //Logs

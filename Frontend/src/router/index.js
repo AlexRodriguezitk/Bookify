@@ -18,6 +18,8 @@ import Categories from '@/views/Categories/CategoriesView.vue'
 import Users from '@/views/Users/UsersView.vue'
 import User from '@/views/Users/UserView.vue'
 import Profile from '@/views/Dashboard/ProfileView.vue'
+import Portal from '@/views/Dashboard/Portal/PortalView.vue'
+import Follow from '@/views/Dashboard/Portal/FollowView.vue'
 
 // Definir rutas
 const routes = [
@@ -77,6 +79,14 @@ const routes = [
         path: '/profile',
         component: Profile,
         meta: { requiresPermission: 'PROFILE.VIEW' },
+      },
+      {
+        path: '/portal/:id',
+        component: Portal,
+      },
+      {
+        path: '/follow/:id',
+        component: Follow,
       },
     ],
   },

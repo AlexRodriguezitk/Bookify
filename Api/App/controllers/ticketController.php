@@ -110,8 +110,13 @@ class TicketController
             return;
         }
 
+        $user = User::get($AuthUser->id);
+        if (!$user) {
+            $this->failed(null, "12", 400);
+            return;
+        }
         //ticket Required Fields
-        $requiredFields = ['title', 'client', 'description', 'status', 'priority', 'category', 'asesor', 'custom_values'];
+        $requiredFields = ['title', 'description', 'category', 'custom_values'];
         //CT_Values Required Fields
         $requiredFieldsValues = ['custom_field_id', 'value'];
 
@@ -127,7 +132,7 @@ class TicketController
                 }
                 foreach ($data[$field] as $value) {
                     foreach ($requiredFieldsValues as $fieldValues) {
-                        if (empty($value[$fieldValues])) {
+                        if (empty($value[$fieldValues]) && $value[$fieldValues] !== '0') {
                             $this->failed(null, "Field '$fieldValues' is required", 400);
                             return;
                         }
@@ -135,7 +140,18 @@ class TicketController
                 }
             }
         }
-        $ticket = new Ticket(null, $data['title'], $data['client'], $data['description'], $data['status'], $data['priority'], $data['category'], $data['asesor']);
+
+        $ticket = new Ticket(
+            null, // id
+            !empty($data['client']) ? $data['client'] : $AuthUser->id, // client
+            $data['title'], // title
+            $data['description'], // description
+            null, // creation_date (lo generará la DB normalmente con CURRENT_TIMESTAMP)
+            !empty($data['status']) ? $data['status'] : 'NEW', // status
+            !empty($data['priority']) ? $data['priority'] : 'LOW', // priority
+            $data['category'], // category
+            !empty($data['asesor']) ? $data['asesor'] : null // asesor
+        );
         $ticket = Ticket::create($ticket);
         foreach ($data['custom_values'] as $value) {
             $custom_value = new CT_Values(null, $value['custom_field_id'], $ticket->id, $value['value']);
@@ -189,6 +205,35 @@ class TicketController
         } else {
             $this->failed(null, 'Ticket not found', 404);
         }
+    }
+
+    public function transfer($id, $userid = null)
+    {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.TRANSFER')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
+
+        $ticket = Ticket::get($id);
+        if (!$ticket) {
+            $this->failed(null, 'Ticket not found', 404);
+            return;
+        }
+
+        if ($userid) {
+            $user = User::get($userid);
+            if (!$user) {
+                $this->failed(null, 'User not found', 404);
+                return;
+            }
+            $ticket->asesor = $user->id;
+        } else {
+            $ticket->asesor = null;
+        }
+        $ticket = Ticket::Update($ticket);
+        $this->saveLog($AuthUser->id, 'TICKET_UPDATED', 'TICKET WAS UPDATED SUCCESSFULLY: ' . $ticket->title);
+        $this->success([$ticket], 'Ticket updated', 200);
     }
 
     public function destroy($id)
@@ -262,6 +307,7 @@ class TicketController
         }
 
         $has_pagination = isset($_GET['page']) && isset($_GET['limit']);
+
         if ($has_pagination) {
             $page = $_GET['page'];
             $limit = $_GET['limit'];

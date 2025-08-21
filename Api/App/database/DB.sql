@@ -154,15 +154,14 @@ CREATE TABLE `terminals` (
 
 CREATE TABLE `tickets` (
   `id` int(11) NOT NULL,
-  `id_cliente` int(11) NOT NULL,
+  `id_client` int(11) NOT NULL,
   `title` varchar(255) NOT NULL,
   `description` text NOT NULL,
   `creation_date` datetime DEFAULT current_timestamp(),
   `status` enum('NEW','IN_PROGRESS','CLOSED') NOT NULL DEFAULT 'NEW',
   `priority` enum('LOW','MEDIUM','HIGH') NOT NULL DEFAULT 'MEDIUM',
   `id_category` int(11) NOT NULL,
-  `id_asesor` int(11) DEFAULT NULL,
-  `public_token` char(64) NOT NULL
+  `id_asesor` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -212,6 +211,11 @@ CREATE TABLE `worklog` (
   `log_date` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `settings`
+--
 
 CREATE TABLE `settings` (
   `id` int unsigned NOT NULL,
@@ -302,8 +306,7 @@ ALTER TABLE `terminals`
 --
 ALTER TABLE `tickets`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `uq_public_token` (`public_token`),
-  ADD KEY `id_cliente` (`id_cliente`),
+  ADD KEY `id_client` (`id_client`),
   ADD KEY `id_category` (`id_category`),
   ADD KEY `id_asesor` (`id_asesor`);
 
@@ -470,7 +473,7 @@ ALTER TABLE `status_history`
 -- Filtros para la tabla `tickets`
 --
 ALTER TABLE `tickets`
-  ADD CONSTRAINT `tickets_ibfk_1` FOREIGN KEY (`id_cliente`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `tickets_ibfk_1` FOREIGN KEY (`id_client`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `tickets_ibfk_2` FOREIGN KEY (`id_category`) REFERENCES `categories` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `tickets_ibfk_3` FOREIGN KEY (`id_asesor`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
