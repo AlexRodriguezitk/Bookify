@@ -13,9 +13,9 @@
       <p class="mb-4 lead">
         Tu solicitud ha sido recibida correctamente. Puedes dar seguimiento con el siguiente enlace:
       </p>
-      <a :href="`/follow/${ticketCreated.id}`" class="btn btn-primary btn-lg">
+      <router-link :to="`/follow/${ticketCreated.id}`" class="btn btn-primary btn-lg">
         Ver seguimiento del ticket
-      </a>
+      </router-link>
     </div>
 
     <div v-else>
