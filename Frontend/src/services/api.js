@@ -19,7 +19,7 @@ const checkBackendStatus = async () => {
 
 const makeQuery = async (endpoint, method = 'GET', data = null) => {
   // 🛑 Cancelar petición anterior si existe
-  if (activeRequests[endpoint]) {
+  if (activeRequests[endpoint] && endpoint != '/permissions/check') {
     activeRequests[endpoint].abort()
   }
 

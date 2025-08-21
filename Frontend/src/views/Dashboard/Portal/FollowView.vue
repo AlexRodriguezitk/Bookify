@@ -6,7 +6,7 @@
           <i class="fas fa-arrow-left"></i>
         </button>
         <h2 class="ms-1">
-          <span class="badge bg-primary">Ticket #{{ ticket.id }}</span>
+          <span class="badge bg-success">Ticket #{{ ticket.id }}</span>
         </h2>
       </div>
       <div class="mx-5">
@@ -18,50 +18,13 @@
             <!-- Left column content here -->
             <TicketInfoC
               :ticket="ticket"
+              :readOnly="true"
               @update-status="uptadeStatus(ticket.id, $event)"
               @update-title="updateTitle(ticket.id, $event)"
             />
           </div>
           <div class="col-lg-8 mt-3 mt-lg-0">
             <!-- Ticket tool bar -->
-            <div class="btn-group w-100 flex-wrap" role="group" aria-label="Ticket actions">
-              <button
-                type="button"
-                :disabled="!Permissions.hasPermission(PermissionsList, 'TICKET.TRANSFER')"
-                class="btn btn-light flex-fill"
-                @click="transferTicket(ticket.id)"
-              >
-                <i class="fas fa-random"></i>
-                <span class="d-none d-lg-inline ms-1">Transferir</span>
-              </button>
-
-              <button
-                type="button"
-                class="btn btn-light flex-fill"
-                :disabled="!Permissions.hasPermission(PermissionsList, 'TICKET.WORKLOG') || 1 == 1"
-                @click="openWorklog(ticket.id)"
-              >
-                <i class="fas fa-book"></i>
-                <span class="d-none d-lg-inline ms-1">Worklog</span>
-              </button>
-
-              <button type="button" class="btn btn-light flex-fill" @click="TogglePublic">
-                <i :class="publicT ? 'fas fa-lock' : 'fas fa-globe'"></i>
-                <span class="d-none d-lg-inline ms-1">
-                  {{ publicT ? 'Modo interno' : 'Modo público' }}
-                </span>
-              </button>
-
-              <button
-                type="button"
-                :disabled="!Permissions.hasPermission(PermissionsList, 'TICKET.RESOLVE')"
-                class="btn btn-primary flex-fill"
-                @click="resolveTicket(ticket.id)"
-              >
-                <i class="fas fa-check"></i>
-                <span class="d-none d-lg-inline ms-1">Resolver</span>
-              </button>
-            </div>
 
             <div>
               <InteractionsC
@@ -129,7 +92,7 @@ export default {
   },
   methods: {
     goBack() {
-      this.$router.push('/tickets')
+      this.$router.push('/dashboard')
     },
 
     async fetchPermissions() {

@@ -17,40 +17,66 @@
         <div class="tab-pane fade show active" id="i">
           <ul class="list-group">
             <li class="list-group-item"><strong>ID:</strong> {{ ticket.id }}</li>
+
+            <!-- Título -->
             <li class="list-group-item d-flex justify-content-between align-items-center">
               <div class="flex-grow-1">
-                <div v-if="!isEditingTitle">
-                  <strong>Titulo:</strong> <span id="ticket-title">{{ ticket.title }}</span>
-                </div>
-                <div v-else class="input-group">
-                  <input
-                    class="form-control form-control-sm"
-                    v-model="ticket.title"
-                    @focusout="ToggleEditTitle"
-                    type="text"
-                  />
-                </div>
+                <template v-if="!isEditingTitle || readOnly">
+                  <strong>Titulo:</strong>
+                  <span id="ticket-title">{{ ticket.title }}</span>
+                </template>
+                <template v-else>
+                  <div class="input-group">
+                    <input
+                      class="form-control form-control-sm"
+                      v-model="editedTitle"
+                      @focusout="ToggleEditTitle"
+                      type="text"
+                    />
+                  </div>
+                </template>
               </div>
-              <button class="btn btn-sm btn-outline-secondary ms-2" @click="ToggleEditTitle">
+              <button
+                v-if="!readOnly"
+                class="btn btn-sm btn-outline-secondary ms-2"
+                @click="ToggleEditTitle"
+              >
                 <i class="fa-solid fa-edit"></i>
               </button>
             </li>
+
+            <!-- Categoría -->
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <strong>Categoría:</strong>
+              <span class="ms-2">
+                {{
+                  ticket.category && ticket.category.name ? ticket.category.name : 'Sin categoría'
+                }}
+              </span>
+            </li>
+
+            <!-- Estado -->
             <li class="list-group-item d-flex justify-content-between align-items-center">
               <span><strong>Estado:</strong></span>
-              <select
-                v-model="ticket.status"
-                class="form-select form-select-sm w-auto"
-                @change="updateStatus"
-              >
-                <option value="NEW">Nuevo</option>
-                <option value="IN_PROGRESS">En progreso</option>
-                <option value="CLOSED">Cerrado</option>
-              </select>
+              <template v-if="readOnly">
+                <span class="badge bg-secondary ms-2">{{ ticket.status }}</span>
+              </template>
+              <template v-else>
+                <select
+                  v-model="localStatus"
+                  class="form-select form-select-sm w-auto"
+                  @change="updateStatus"
+                >
+                  <option value="NEW">Nuevo</option>
+                  <option value="IN_PROGRESS">En progreso</option>
+                  <option value="CLOSED">Cerrado</option>
+                </select>
+              </template>
             </li>
+
+            <!-- Creación -->
             <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span>
-                <strong>Created At:</strong>
-              </span>
+              <span><strong>Created At:</strong></span>
               <span class="badge bg-primary ms-2">
                 {{
                   new Date(ticket.creation_date).toLocaleString('es-ES', {
@@ -63,14 +89,16 @@
                 }}
               </span>
             </li>
+
+            <!-- Cliente -->
             <li class="list-group-item d-flex justify-content-between align-items-center">
               <strong>Cliente:</strong>
               <span class="d-flex align-items-center">
                 <img
                   :src="
-                    ticket.client.profile_image
+                    ticket.client?.profile_image
                       ? ticket.client.profile_image
-                      : `https://ui-avatars.com/api/?name=${ticket.client.name}&background=random`
+                      : `https://ui-avatars.com/api/?name=${ticket.client?.name}&background=random`
                   "
                   alt="Profile Image"
                   class="rounded-circle"
@@ -78,13 +106,17 @@
                   height="30"
                 />
                 <router-link
-                  :to="`/users/${ticket.client.id}`"
+                  v-if="!readOnly"
+                  :to="`/users/${ticket.client?.id}`"
                   class="ms-2 text-decoration-none text-dark"
                 >
-                  {{ ticket.client.name }}
+                  {{ ticket.client?.name }}
                 </router-link>
+                <span v-else class="ms-2">{{ ticket.client?.name }}</span>
               </span>
             </li>
+
+            <!-- Asesor -->
             <li class="list-group-item d-flex justify-content-between align-items-center">
               <strong>Asignado a:</strong>
               <span class="d-flex align-items-center">
@@ -101,25 +133,29 @@
                     height="30"
                   />
                   <router-link
+                    v-if="!readOnly"
                     :to="`/users/${ticket.asesor.id}`"
                     class="ms-2 text-decoration-none text-dark"
                   >
                     {{ ticket.asesor.name }}
                   </router-link>
+                  <span v-else class="ms-2">{{ ticket.asesor.name }}</span>
                 </template>
                 <template v-else>
                   <span class="text-muted ms-2">Sin asignar</span>
                 </template>
               </span>
             </li>
+
+            <!-- Descripción -->
             <li class="list-group-item">
-              <div class="mb-1">
-                <strong>Descripción del caso:</strong>
-              </div>
-              <p v-html="ticket.description.replace(/\n/g, '<br>')"></p>
+              <div class="mb-1"><strong>Descripción del caso:</strong></div>
+              <p v-html="ticket.description?.replace(/\n/g, '<br>')"></p>
             </li>
           </ul>
         </div>
+
+        <!-- Campos personalizados -->
         <div class="tab-pane fade" id="custom">
           <ul class="list-group">
             <li class="list-group-item" v-for="field in ticket.custom_fields" :key="field.id">
@@ -178,60 +214,60 @@ export default {
         title: '',
         status: '',
         creation_date: '',
-        client: '',
-        asesor: '',
+        client: {},
+        asesor: null,
         custom_values: [],
         custom_fields: [],
       }),
+    },
+    readOnly: {
+      // 👈 nuevo prop
+      type: Boolean,
+      default: false,
     },
   },
   data() {
     return {
       isEditingTitle: false,
       originalTitle: this.ticket.title,
+      localStatus: this.ticket.status,
+      editedTitle: this.ticket.title,
     }
+  },
+  watch: {
+    'ticket.status'(newVal) {
+      this.localStatus = newVal
+    },
   },
   methods: {
     updateStatus() {
-      this.$emit('update-status', this.ticket.status)
+      if (!this.readOnly) {
+        this.$emit('update-status', this.localStatus)
+      }
     },
     ToggleEditTitle() {
+      if (this.readOnly) return
       this.isEditingTitle = !this.isEditingTitle
-      //Focus imput when editing title
       if (this.isEditingTitle) {
+        this.editedTitle = this.ticket.title
         this.$nextTick(() => {
           const input = this.$el.querySelector('input[type="text"]')
-          if (input) {
-            input.focus()
-          }
+          if (input) input.focus()
         })
-      }
-      // Emit the updated title when editing is toggled off
-      if (!this.isEditingTitle) {
-        if (this.ticket.title !== this.originalTitle) {
-          this.$emit('update-title', this.ticket.title)
-          this.originalTitle = this.ticket.title // Update original title to the new value
+      } else {
+        if (this.editedTitle !== this.originalTitle) {
+          this.$emit('update-title', this.editedTitle)
+          this.originalTitle = this.editedTitle
         }
       }
     },
-
     getFieldValue(customFieldId) {
       const match = this.ticket.custom_values.find((v) => v.custom_field_id === customFieldId)
       return match ? match.value : null
     },
-
-    getFieldValueRef(customFieldId) {
-      return {
-        get: () => this.customValuesMap[customFieldId],
-        set: (val) => {
-          this.customValuesMap[customFieldId] = val
-        },
-      }
-    },
     formatDate(value) {
       if (!value) return '-'
-      // Ajusta formato según tus necesidades
-      return new Date(value).toLocaleDateString('en-US')
+      return new Date(value).toLocaleDateString('es-ES')
     },
   },
 }

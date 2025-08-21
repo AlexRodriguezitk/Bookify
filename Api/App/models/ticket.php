@@ -57,7 +57,7 @@ class ticket
             $tickets = [];
             foreach ($result as $key => $value) {
                 //Append tickets to array
-                $tickets[] = new Ticket($value['id'], $value['id_cliente'], $value['title'], $value['description'], $value['creation_date'], $value['status'], $value['priority'], $value['id_category'], $value['id_asesor']);
+                $tickets[] = new Ticket($value['id'], $value['id_client'], $value['title'], $value['description'], $value['creation_date'], $value['status'], $value['priority'], $value['id_category'], $value['id_asesor']);
             }
             return $tickets;
         } catch (PDOException $e) {
@@ -92,7 +92,7 @@ class ticket
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($result) {
-                return new ticket($result['id'], $result['id_cliente'], $result['title'], $result['description'], $result['creation_date'], $result['status'], $result['priority'], $result['id_category'], $result['id_asesor']);
+                return new ticket($result['id'], $result['id_client'], $result['title'], $result['description'], $result['creation_date'], $result['status'], $result['priority'], $result['id_category'], $result['id_asesor']);
             }
         } catch (PDOException $e) {
             throw new Exception("Error al obtener el ticket: " . $e->getMessage());
@@ -105,7 +105,7 @@ class ticket
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = "INSERT INTO tickets (client, title, description, creation_date, status, priority, category, asesor) VALUES (:client, :title, :description, :creation_date, :status, :priority, :category, :asesor)";
+            $query = "INSERT INTO tickets (id_client, title, description, creation_date, status, priority, id_category, id_asesor) VALUES (:client, :title, :description, :creation_date, :status, :priority, :category, :asesor)";
             $stmt = $connection->prepare($query);
             $stmt->bindParam(':client', $ticket->client);
             $stmt->bindParam(':title', $ticket->title);
@@ -129,7 +129,7 @@ class ticket
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = "UPDATE tickets SET id_cliente  = :client, title = :title, description = :description, creation_date = :creation_date, status = :status, priority = :priority, id_category  = :category, 	id_asesor = :asesor WHERE id = :id";
+            $query = "UPDATE tickets SET id_client  = :client, title = :title, description = :description, creation_date = :creation_date, status = :status, priority = :priority, id_category  = :category, 	id_asesor = :asesor WHERE id = :id";
             $stmt = $connection->prepare($query);
             $stmt->bindParam(':client', $ticket->client);
             $stmt->bindParam(':title', $ticket->title);
@@ -181,7 +181,7 @@ class ticket
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $tickets = [];
             foreach ($result as $key => $value) {
-                $tickets[] = new ticket($value['id'], $value['id_cliente'], $value['title'], $value['description'], $value['creation_date'], $value['status'], $value['priority'], $value['id_category'], $value['id_asesor']);
+                $tickets[] = new ticket($value['id'], $value['id_client'], $value['title'], $value['description'], $value['creation_date'], $value['status'], $value['priority'], $value['id_category'], $value['id_asesor']);
             }
             return $tickets;
         } catch (PDOException $e) {
