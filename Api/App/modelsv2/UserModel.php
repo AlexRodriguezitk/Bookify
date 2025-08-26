@@ -45,4 +45,56 @@ class UserModel
             return null;
         }
     }
+    public function getAll(?int $limit = 50, ?int $offset = 0, ?string $search = null): array
+    {
+        $query = "SELECT * FROM users";
+
+        if ($search !== null) {
+            $query .= " WHERE name LIKE :search OR username LIKE :search OR phone LIKE :search";
+        }
+
+        $query .= " LIMIT $limit OFFSET $offset";
+
+        try {
+            $stmt = $this->pdo->prepare($query);
+            if ($search !== null) {
+                $stmt->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
+            }
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            if (empty($result)) {
+                return [];
+            }
+            //array_map(fn($u) => $u->jsonSerialize(), $user);
+            $users = array_map(function ($user) {
+                return new UsersRep($user);
+            }, $result);
+            return $users;
+        } catch (PDOException $e) {
+            // Aquí puedes loguear el error
+            return [];
+        }
+    }
+
+    public function CountQuery(?string $search = null): int
+    {
+        $query = "SELECT COUNT(*) as total FROM users";
+
+        if ($search !== null) {
+            $query .= " WHERE name LIKE :search OR username LIKE :search OR phone LIKE :search";
+        }
+
+        try {
+            $stmt = $this->pdo->prepare($query);
+            if ($search !== null) {
+                $stmt->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
+            }
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'];
+        } catch (PDOException $e) {
+            // Aquí puedes loguear el error
+            return 0;
+        }
+    }
 }

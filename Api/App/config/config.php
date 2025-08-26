@@ -20,7 +20,8 @@ if (file_exists($envFile)) {
         getenv('DB_USER') === false &&
         getenv('DB_PASSWORD') === false &&
         getenv('BASE_URL') === false &&
-        getenv('IS_INSTALLED') === false
+        getenv('IS_INSTALLED') === false &&
+        getenv('APP_LOCALE') === false
     ) {
         // 3. Si tampoco hay, crear un .env vacío
         file_put_contents($envFile, "# Archivo .env creado automáticamente\n");
@@ -35,6 +36,7 @@ return [
         'user'     => $_ENV['DB_USER']     ?? getenv('DB_USER')     ?: null,
         'password' => $_ENV['DB_PASSWORD'] ?? getenv('DB_PASSWORD') ?: null,
     ],
+    'locale'       => $_ENV['APP_LOCALE'] ?? getenv('APP_LOCALE') ?: 'es-col',
     'base_url'     => rtrim($_ENV['BASE_URL'] ?? getenv('BASE_URL') ?: '', '/'),
     'is_installed' => $_ENV['IS_INSTALLED'] ?? getenv('IS_INSTALLED') ?: null,
 ];

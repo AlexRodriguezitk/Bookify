@@ -59,6 +59,19 @@ class UserController
             $this->success(['users' => $users, 'pagination' => ['page' => $page, 'limit' => $limit, 'total' => $total, 'total_pages' => $pages]], 'Users found', 200);
         } else {
             $users = User::GetAll();
+            if (empty($users)) {
+                $this->failed(null, 'Users not found', 404);
+                return;
+            }
+
+            foreach ($users as $key => $user) {
+                $userArray = (array) $user;
+                unset($userArray['password']);
+                $userArray['rol'] = Rol::get($userArray['rol']);
+                $users[$key] = (object) $userArray;
+            }
+
+            $this->success(['users' => $users], 'Users found', 200);
         }
     }
 
