@@ -5,13 +5,11 @@ use App\Auth;
 use App\database\Database;
 use App\Controllers\InstallController;
 
-// Cargar variables de entorno
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
-
-// Obtener configuración
+// ✅ Configuración centralizada
 $config = require __DIR__ . '/App/config/config.php';
-$baseUrl = $config['base_url'];
+
+// Variables desde config.php (ya procesadas desde .env o entorno)
+$baseUrl      = $config['base_url'];
 $is_installed = $config['is_installed'];
 
 // Crear instancia de base de datos (sin forzar la conexión)
@@ -21,7 +19,7 @@ $db = Database::getInstance();
 Flight::before('start', function () use ($db, $is_installed) {
     $route = Flight::request()->url;
 
-    // ✅ Agregadas las nuevas rutas de login a las rutas públicas
+    // ✅ Rutas públicas (sin auth)
     $publicRoutes = [
         '/auth/login/password',
         '/auth/login/verify-2fa',
@@ -31,22 +29,21 @@ Flight::before('start', function () use ($db, $is_installed) {
         '/',
     ];
 
-    // Si la base de datos falla y no estamos en /api/install, redirigir al controlador
+    // Si la base de datos falla y no estamos en /install
     if ($db->hasError() && $route !== '/install') {
         $controller = new InstallController();
         if ($is_installed) {
-            $controller->handle($db->getError()); // Llamar al controlador
-            Flight::stop();
-            return;
+            $controller->handle($db->getError());
         } else {
-            $controller->handle('Database is not installed. Please run POST /api/install to set it up.'); // Llamar al controlador
-            Flight::stop();
-            return;
+            $controller->handle(
+                'Database is not installed. Please run POST /api/install to set it up.'
+            );
         }
+        Flight::stop();
+        return;
     }
 
-
-    // Aplicar autenticación a rutas privadas
+    // Autenticación para rutas privadas
     if (!in_array($route, $publicRoutes)) {
         Auth::requireAuth();
     }
@@ -54,7 +51,6 @@ Flight::before('start', function () use ($db, $is_installed) {
 
 // Cargar rutas
 require 'routes/router.php';
-
 
 // Iniciar Flight
 Flight::start();
