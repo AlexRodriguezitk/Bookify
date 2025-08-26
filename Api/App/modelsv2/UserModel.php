@@ -3,9 +3,11 @@
 namespace App\Modelsv2;
 
 use App\Database\Database;
+use App\models\User;
 use App\Repositories\UsersRep;
 use PDO;
 use PDOException;
+use Exception;
 
 class UserModel
 {
@@ -95,6 +97,92 @@ class UserModel
         } catch (PDOException $e) {
             // Aquí puedes loguear el error
             return 0;
+        }
+    }
+
+    public function Create(UsersRep $user): UsersRep
+    {
+        try {
+            $reflection = new \ReflectionClass($user);
+            $props = $reflection->getProperties();
+
+            $params = [];
+            foreach ($props as $prop) {
+                $name = $prop->getName();
+
+                // ignoramos los que no van en INSERT
+                if (in_array($name, ['id', 'created_at', 'updated_at', 'deleted_at', 'last_login_at'])) {
+                    continue;
+                }
+
+                $getter = "get" . ucfirst($name);
+                if (method_exists($user, $getter)) {
+                    $params[$name] = $user->$getter();
+                } else {
+                    $prop->setAccessible(true);
+                    $params[$name] = $prop->getValue($user);
+                }
+            }
+
+            $columns = implode(", ", array_keys($params));
+            $placeholders = ":" . implode(", :", array_keys($params));
+
+            $stmt = $this->pdo->prepare("INSERT INTO users ($columns) VALUES ($placeholders)");
+            $stmt->execute($params);
+
+            $user->id = (int) $this->pdo->lastInsertId();
+            return $user;
+        } catch (\PDOException $e) {
+            throw new \Exception("Error al crear el usuario: " . $e->getMessage());
+        }
+    }
+
+    public function Update(UsersRep $user): UsersRep
+    {
+        try {
+            $user->updated_at = new \DateTime();
+            $reflection = new \ReflectionClass($user);
+            $props = $reflection->getProperties();
+
+            $params = [];
+            foreach ($props as $prop) {
+                $name = $prop->getName();
+
+                // ignoramos los que no deben actualizarse
+                if (in_array($name, ['id', 'created_at'])) {
+                    continue;
+                }
+
+                $getter = "get" . ucfirst($name);
+                if (method_exists($user, $getter)) {
+                    $value = $user->$getter();
+                    if ($value instanceof \DateTime) {
+                        $value = $value->format('Y-m-d H:i:s');
+                    }
+                    $params[$name] = $value;
+                } else {
+                    $prop->setAccessible(true);
+                    $value = $prop->getValue($user);
+                    if ($value instanceof \DateTime) {
+                        $value = $value->format('Y-m-d H:i:s');
+                    }
+                    $params[$name] = $value;
+                }
+            }
+
+            $set = implode(", ", array_map(fn($field) => "$field = :$field", array_keys($params)));
+
+            // importante: WHERE id obligatorio
+            $params['id'] = $user->id;
+
+
+
+            $stmt = $this->pdo->prepare("UPDATE users SET $set WHERE id = :id");
+            $stmt->execute($params);
+
+            return $user;
+        } catch (\PDOException $e) {
+            throw new \Exception("Error al actualizar el usuario: " . $e->getMessage());
         }
     }
 }

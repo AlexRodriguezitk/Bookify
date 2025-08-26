@@ -84,9 +84,52 @@ class UsersRep
                 'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
                 'deleted_at' => $this->deleted_at?->format('Y-m-d H:i:s'),
                 'last_login_at' => $this->last_login_at?->format('Y-m-d H:i:s'),
-                'last_ip' => $this->last_ip,
                 'is_active' => $this->is_active,
             ],
         ];
+    }
+
+    public function RequieredFields(): array
+    {
+        return [
+            'name',
+            'email',
+            'username',
+            'password',
+        ];
+    }
+
+    public function OptionalFields(): array
+    {
+        return [
+            'phone',
+            'profile_image',
+        ];
+    }
+
+    public static function fromArray(array $params, bool $strict = true, ?UsersRep $user = null): self
+    {
+        $user = $user ?? new UsersRep();
+        if (empty($params)) {
+            throw new \InvalidArgumentException("No se recibieron datos");
+        }
+        foreach ($user->RequieredFields() as $field) {
+            if (!isset($params[$field]) && $strict) {
+                throw new \InvalidArgumentException("Falta el campo requerido: $field");
+            }
+            if ($field === 'password') {
+                $user->setPassword($params[$field]);
+            } else {
+                $user->{$field} = $params[$field];
+            }
+        }
+
+        foreach ($user->optionalFields() as $field) {
+            if (isset($params[$field])) {
+                $user->{$field} = $params[$field];
+            }
+        }
+
+        return $user;
     }
 }
