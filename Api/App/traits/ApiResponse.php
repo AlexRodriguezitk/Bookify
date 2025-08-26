@@ -7,7 +7,7 @@ use Flight;
 trait ApiResponse
 {
     public function success(array $data, string $message = 'Success', int $code = 200)
-    { 
+    {
         return Flight::json([
             'data' => $data,
             'status' => true,
@@ -23,7 +23,7 @@ trait ApiResponse
             'message' => $message,
         ], $code);
     }
-    
+
     public function setJwtBearerToken(string $token)
     {
         Flight::response()->header('Authorization', 'Bearer ' . $token);

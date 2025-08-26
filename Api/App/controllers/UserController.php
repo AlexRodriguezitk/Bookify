@@ -226,7 +226,7 @@ class UserController
             }
 
             // Si no tiene 2FA, el login continúa como antes
-            $token = \App\Auth::generateToken($user->id, $user->rol);
+            $token = \App\Middlewares\Auth::generateToken($user->id, $user->rol);
             Flight::set('user', $user);
             $this->saveLog($user->id, 'USER_LOGIN', 'USER WAS LOGGED IN SUCCESSFULLY: ' . $user->name);
             $this->setJwtBearerToken($token);
@@ -266,13 +266,14 @@ class UserController
 
         if ($isValid) {
             // Si el código es válido, genera el token JWT y completa el login
-            $token = \App\Auth::generateToken($user->id, $user->rol);
+            $token = \App\Middlewares\Auth::generateToken($user->id, $user->rol);
             Flight::set('user', $user);
             $this->saveLog($user->id, 'USER_LOGIN_2FA', 'USER WAS LOGGED IN WITH 2FA: ' . $user->name);
             $this->setJwtBearerToken($token);
             $rol = Rol::Get($user->rol);
             $user->rol = $rol;
             unset($user->totp_secret);
+            unset($user->password);
             $this->success(['token' => $token, 'user' => $user], 'Login successful', 200);
         } else {
             $this->failed(null, 'Invalid OTP code', 401);
@@ -288,7 +289,7 @@ class UserController
         }
 
         $token = str_replace('Bearer ', '', $headers['Authorization']);
-        $decoded = \App\Auth::validateToken($token);
+        $decoded = \App\Middlewares\Auth::validateToken($token);
         if (!$decoded) {
             $this->failed(null, 'Invalid or expired token', 401);
             return;
@@ -304,7 +305,7 @@ class UserController
             return;
         }
 
-        $newToken = \App\Auth::generateToken($user->id, $user->rol);
+        $newToken = \App\Middlewares\Auth::generateToken($user->id, $user->rol);
         $rol = Rol::Get($user->rol);
         $user->rol = $rol;
         $this->setJwtBearerToken($newToken);
@@ -340,7 +341,7 @@ class UserController
         $user = new User(null, $data['name'], $data['username'], $data['password'], $data['phone'], 2, null, null, 1, null);
         $user = User::create($user);
 
-        $token = \App\Auth::generateToken($user->id, $user->rol);
+        $token = \App\Middlewares\Auth::generateToken($user->id, $user->rol);
         $this->setJwtBearerToken($token);
 
         $rol = Rol::Get($user->rol);
@@ -465,7 +466,7 @@ class UserController
 
     public function GenPassword()
     {
-        $password = \App\Auth::GenPassword();
+        $password = \App\Middlewares\Auth::GenPassword();
         $this->success([$password], 'Password generated', 200);
     }
 
