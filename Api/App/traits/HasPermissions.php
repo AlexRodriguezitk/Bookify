@@ -10,15 +10,13 @@ use PDO;
 trait HasPermissions
 {
 
-    public function checkPermission($userId, $permissionName)
+    public function checkPermission($userId, $permissionName, $fatherPermission = null)
     {
         $db = Database::getInstance()->getConnection();
         if (!$db) {
             throw new \Exception('Database connection not found');
         }
-
-        // Primero, verificar si el usuario tiene el permiso ALL
-        $query = $db->prepare("
+        $query = "
             SELECT EXISTS (
                 SELECT 1 FROM users AS u
                 JOIN user_roles AS ur ON ur.id_user = u.id
@@ -26,14 +24,21 @@ trait HasPermissions
                 JOIN role_permissions AS rp ON rp.id_role = r.id
                 JOIN permissions AS p ON p.id = rp.id_permission
                 WHERE u.id = :userId AND p.name = :permissionName OR u.id = :userId AND p.name = 'global.access'
+        ";
+
+        $query .= $fatherPermission ? " OR p.name = '$fatherPermission'" : '';
+
+        $query .= "
             ) AS is_allowed
-        ");
-        $query->execute([
+        ";
+
+        $stmt = $db->prepare($query);
+        $stmt->execute([
             ':userId' => $userId,
             ':permissionName' => $permissionName
         ]);
 
-        $result = $query->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result ? (bool) $result['is_allowed'] : false;
     }
 }

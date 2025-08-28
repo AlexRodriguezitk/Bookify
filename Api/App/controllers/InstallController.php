@@ -43,95 +43,95 @@ class InstallController
     }
 
     public function install()
-{
-    $dbCreated = false; // ✅ Para saber si se creó la DB
-    try {
-        $data = Flight::request()->data->getData();
+    {
+        $dbCreated = false; // ✅ Para saber si se creó la DB
+        try {
+            $data = Flight::request()->data->getData();
 
-        $dbHost = $data['DB_HOST'] ?? null;
-        $dbName = $data['DB_NAME'] ?? 'bookify';
-        $dbUser = $data['DB_USER'] ?? null;
-        $dbPassword = $data['DB_PASSWORD'] ?? '';
-        $jwtSecret = $data['JWT_SECRET'] ?? bin2hex(random_bytes(32));
-        $jwtAlgorithm = $data['JWT_ALGORITHM'] ?? 'HS256';
-        $jwtExpiration = $data['JWT_EXPIRATION'] ?? 3600;
+            $dbHost = $data['DB_HOST'] ?? null;
+            $dbName = $data['DB_NAME'] ?? 'bookify';
+            $dbUser = $data['DB_USER'] ?? null;
+            $dbPassword = $data['DB_PASSWORD'] ?? '';
+            $jwtSecret = $data['JWT_SECRET'] ?? bin2hex(random_bytes(32));
+            $jwtAlgorithm = $data['JWT_ALGORITHM'] ?? 'HS256';
+            $jwtExpiration = $data['JWT_EXPIRATION'] ?? 3600;
 
-        $adminName = $data['admin_name'] ?? null;
-        $adminUsername = $data['admin_username'] ?? null;
-        $adminPassword = $data['admin_password'] ?? null;
-        $adminPhone = $data['admin_phone'] ?? null;
+            // $adminName = $data['admin_name'] ?? null;
+            // $adminUsername = $data['admin_username'] ?? null;
+            // $adminPassword = $data['admin_password'] ?? null;
+            // $adminPhone = $data['admin_phone'] ?? null;
 
-        if (empty($data)) {
-            return $this->failed(null, "No data provided", 400);
-        }
-        $requiredFields = ['DB_HOST', 'DB_USER', 'admin_name', 'admin_username', 'admin_password', 'admin_phone'];
-        foreach ($requiredFields as $field) {
-            if (empty($data[$field])) {
-                return $this->failed(null, "Field '$field' is required", 400);
+            if (empty($data)) {
+                return $this->failed(null, "No data provided", 400);
             }
-        }
-
-        $request = Flight::request();
-        $scheme = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'];
-        $basePath = $request->base;
-        $baseUrl = "{$scheme}://{$host}{$basePath}";
-
-        $envPath = __DIR__ . '/../../.env';
-        if (!file_exists($envPath)) {
-            file_put_contents($envPath, "");
-        }
-
-        $date = date('Y-m-d H:i:s');
-
-        // ✅ Conexión al servidor (sin DB aún)
-        $dsn = "mysql:host=$dbHost;";
-        $pdo = new PDO($dsn, $dbUser, $dbPassword, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-        ]);
-
-        $stmt = $pdo->query("SHOW DATABASES LIKE '$dbName'");
-        $dbExists = $stmt->fetch();
-
-        if (!$dbExists) {
-            // ✅ Crear DB
-            $pdo->exec("CREATE DATABASE `$dbName` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
-            $dbCreated = true; // Marcar que se creó
-
-            // Ejecutar script SQL
-            $sqlFile = __DIR__ . "/../database/DB.sql";
-            if (!file_exists($sqlFile)) {
-                throw new Exception('Archivo DB.SQL no encontrado.');
+            $requiredFields = ['DB_HOST', 'DB_USER'];
+            foreach ($requiredFields as $field) {
+                if (empty($data[$field])) {
+                    return $this->failed(null, "Field '$field' is required", 400);
+                }
             }
 
-            $pdo->exec("USE `$dbName`;");
-            $sql = file_get_contents($sqlFile);
-            $sql = str_replace('{DB_NAME}', $dbName, $sql);
-            $pdo->exec($sql);
-        } else {
-            // ✅ Si ya existe, solo seleccionarla
-            $pdo->exec("USE `$dbName`;");
-            $dbCreated = true;
-        }
+            $request = Flight::request();
+            $scheme = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
+            $host = $_SERVER['HTTP_HOST'];
+            $basePath = $request->base;
+            $baseUrl = "{$scheme}://{$host}{$basePath}";
 
-        // Insertar admin
-        $hashedPassword = password_hash($adminPassword, PASSWORD_BCRYPT);
-        $query = "INSERT INTO users (name, username, password, phone, rol, is_active) 
-                  VALUES (:name, :username, :password, :phone, :rol, :is_active)";
-        $stmt = $pdo->prepare($query);
-        $stmt->bindValue(':name', $adminName);
-        $stmt->bindValue(':username', $adminUsername);
-        $stmt->bindValue(':password', $hashedPassword);
-        $stmt->bindValue(':phone', $adminPhone);
-        $stmt->bindValue(':rol', 1);
-        $stmt->bindValue(':is_active', 1);
-        $stmt->execute();
+            $envPath = __DIR__ . '/../../.env';
+            if (!file_exists($envPath)) {
+                file_put_contents($envPath, "");
+            }
 
-        // Crear htaccess
-        $this->setHtaccess();
+            $date = date('Y-m-d H:i:s');
 
-        // Guardar .env
-        $envContent = "
+            // ✅ Conexión al servidor (sin DB aún)
+            $dsn = "mysql:host=$dbHost;";
+            $pdo = new PDO($dsn, $dbUser, $dbPassword, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+            ]);
+
+            $stmt = $pdo->query("SHOW DATABASES LIKE '$dbName'");
+            $dbExists = $stmt->fetch();
+
+            if (!$dbExists) {
+                // ✅ Crear DB
+                $pdo->exec("CREATE DATABASE `$dbName` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;");
+                $dbCreated = true; // Marcar que se creó
+
+                // Ejecutar script SQL
+                $sqlFile = __DIR__ . "/../database/DB.sql";
+                if (!file_exists($sqlFile)) {
+                    throw new Exception('Archivo DB.SQL no encontrado.');
+                }
+
+                $pdo->exec("USE `$dbName`;");
+                $sql = file_get_contents($sqlFile);
+                $sql = str_replace('{DB_NAME}', $dbName, $sql);
+                $pdo->exec($sql);
+            } else {
+                // ✅ Si ya existe, solo seleccionarla
+                $pdo->exec("USE `$dbName`;");
+                $dbCreated = true;
+            }
+
+            // Insertar admin
+            // $hashedPassword = password_hash($adminPassword, PASSWORD_BCRYPT);
+            // $query = "INSERT INTO users (name, username, password, phone, rol, is_active) 
+            //       VALUES (:name, :username, :password, :phone, :rol, :is_active)";
+            // $stmt = $pdo->prepare($query);
+            // $stmt->bindValue(':name', $adminName);
+            // $stmt->bindValue(':username', $adminUsername);
+            // $stmt->bindValue(':password', $hashedPassword);
+            // $stmt->bindValue(':phone', $adminPhone);
+            // $stmt->bindValue(':rol', 1);
+            // $stmt->bindValue(':is_active', 1);
+            // $stmt->execute();
+
+            // Crear htaccess
+            $this->setHtaccess();
+
+            // Guardar .env
+            $envContent = "
 # ==========================================
 # CONFIGURACIÓN DE LA BASE DE DATOS
 # ==========================================
@@ -151,6 +151,7 @@ JWT_EXPIRATION=$jwtExpiration
 # OTRAS CONFIGURACIONES
 # ==========================================
 BASE_URL=$baseUrl
+APP_LOCALE=en-us
 IS_INSTALLED=TRUE
 
 # ==========================================
@@ -158,22 +159,21 @@ IS_INSTALLED=TRUE
 # ==========================================
 # Fecha de instalación: $date
 ";
-        file_put_contents($envPath, trim($envContent));
+            file_put_contents($envPath, trim($envContent));
 
-        return $this->success([null], 'Instalación completada con éxito.');
-    } catch (Exception $e) {
-        // ✅ Si se creó la DB pero falló otra cosa → eliminarla
-        if ($dbCreated && isset($pdo)) {
-            try {
-                $pdo->exec("DROP DATABASE `$dbName`;");
-                
-            } catch (Exception $ex) {
-                // Silenciar si falla el drop
+            return $this->success([null], 'Instalación completada con éxito.');
+        } catch (Exception $e) {
+            // ✅ Si se creó la DB pero falló otra cosa → eliminarla
+            if ($dbCreated && isset($pdo)) {
+                try {
+                    $pdo->exec("DROP DATABASE `$dbName`;");
+                } catch (Exception $ex) {
+                    // Silenciar si falla el drop
+                }
             }
+            return $this->failed(['error' => $e->getMessage()], 'Error en la instalación.', 500);
         }
-        return $this->failed(['error' => $e->getMessage()], 'Error en la instalación.', 500);
     }
-}
 
     public function setHtaccess()
     {

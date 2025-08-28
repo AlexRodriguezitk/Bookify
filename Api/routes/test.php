@@ -6,6 +6,7 @@ use App\Modelsv2\UserModel;
 use App\Repositories\UsersRep;
 use App\traits\ApiResponse;
 use App\traits\HasPermissions;
+use App\Controllers\New\UserController;
 use App\Langs\LangManager;
 use DateTime;
 use Flight;
@@ -121,3 +122,6 @@ Flight::route('GET /test/permission', function () use ($api) {
 //         return $api->failed(null, $errorMsg, 500);
 //     }
 // });
+
+
+Flight::route('GET /test/apiv2/users', [new UserController(), 'index']);

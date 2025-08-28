@@ -69,9 +69,9 @@ class UsersRep
     }
 
     // Serialización a JSON sin timezone extra
-    public function jsonSerialize(): array
+    public function jsonSerialize(?bool $PublicMode = false): array
     {
-        return [
+        $Private = [
             'id' => $this->id,
             'type' => 'user',
             'attributes' => [
@@ -87,6 +87,18 @@ class UsersRep
                 'is_active' => $this->is_active,
             ],
         ];
+
+        $Public = [
+            'id' => $this->id,
+            'type' => 'user',
+            'attributes' => [
+                'name' => $this->name,
+                'username' => $this->username,
+                'profile_image' => $this->profile_image,
+            ],
+        ];
+
+        return $PublicMode ? $Public : $Private;
     }
 
     public function RequieredFields(): array

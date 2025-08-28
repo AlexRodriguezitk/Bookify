@@ -51,18 +51,30 @@ class UserModel
     {
         $query = "SELECT * FROM users";
 
-        if ($search !== null) {
-            $query .= " WHERE name LIKE :search OR username LIKE :search OR phone LIKE :search";
+        if ($list_all) {
+            if ($search !== null) {
+                $query .= " WHERE name LIKE :search OR username LIKE :search OR phone LIKE :search";
+            }
+        } else {
+            $query .= " WHERE deleted_at IS NULL";
+            if ($search !== null) {
+                $query .= " AND (name LIKE :search OR username LIKE :search OR phone LIKE :search)";
+            }
         }
-        $query .= !$list_all ? " WHERE deleted_at IS NULL" : "";
-        $query .= " LIMIT $limit OFFSET $offset";
 
+        if ($limit !== null) {
+            $query .= " LIMIT " . (int)$limit;
+            if ($offset !== null) {
+                $query .= " OFFSET " . (int)$offset;
+            }
+        }
 
         try {
             $stmt = $this->pdo->prepare($query);
             if ($search !== null) {
                 $stmt->bindValue(':search', '%' . $search . '%', PDO::PARAM_STR);
             }
+            //Echo query con parametros para ver que envia a SQL
             $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
             if (empty($result)) {

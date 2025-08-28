@@ -21,7 +21,7 @@ class LangManager
         $this->messages = require $file;
     }
 
-    public function get(string $key, array $params = []): string
+    public function getMessage(string $key, array $params = []): string
     {
         $message = $this->messages[$key] ?? $key;
         foreach ($params as $k => $v) {
