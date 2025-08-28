@@ -5,6 +5,7 @@ namespace routes;
 use App\Modelsv2\UserModel;
 use App\Repositories\UsersRep;
 use App\traits\ApiResponse;
+use App\traits\HasPermissions;
 use App\Langs\LangManager;
 use DateTime;
 use Flight;
@@ -12,6 +13,7 @@ use Flight;
 class ApiHelper
 {
     use ApiResponse;
+    use HasPermissions;
 }
 
 $api = new ApiHelper();
@@ -22,6 +24,16 @@ Flight::route('GET /ping', function () use ($api) {
 
 Flight::route('GET /fail', function () use ($api) {
     return $api->failed(null, "Error simulado");
+});
+
+Flight::route('GET /test', function () use ($api) {
+    try {
+        $UserModel = new UserModel();
+        $users = $UserModel->getAll();
+        return $api->success($users, "OK");
+    } catch (\Exception $e) {
+        return $api->failed(null, "Error inesperado: " . $e->getMessage());
+    }
 });
 
 
@@ -58,6 +70,26 @@ Flight::route('POST /test/up/@id', function ($id) use ($api) {
     }
 });
 
+// Flight::route('GET /test/@username', function ($username) use ($api) {
+//     try {
+//         $UserModel = new UserModel();
+//         $user = $UserModel->GetByField('username', $username);
+//         if (!$user) {
+//             return $api->failed(null, "Usuario no encontrado", 404);
+//         }
+//         return $api->success($user->jsonSerialize(), "OK");
+//     } catch (\Exception $e) {
+//         return $api->failed(null, "Error inesperado: " . $e->getMessage());
+//     }
+// });
+
+Flight::route('GET /test/permission', function () use ($api) {
+    // $AuthUser = Flight::get('user');
+    if (!$api->checkPermission(1, 'ss')) {
+        $api->failed(null, 'Denegado', 403);
+        return;
+    }
+});
 
 // Supongamos que $api ya es tu objeto con ApiResponse
 // Flight::route('GET /test', function () use ($api) {

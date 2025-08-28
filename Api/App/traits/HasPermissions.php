@@ -9,6 +9,7 @@ use PDO;
 
 trait HasPermissions
 {
+
     public function checkPermission($userId, $permissionName)
     {
         $db = Database::getInstance()->getConnection();
@@ -16,37 +17,20 @@ trait HasPermissions
             throw new \Exception('Database connection not found');
         }
 
+        // Primero, verificar si el usuario tiene el permiso ALL
         $query = $db->prepare("
-            SELECT rp.is_allowed
-            FROM users u
-            JOIN roles r ON u.rol = r.id
-            JOIN role_permissions rp ON r.id = rp.id_rol
-            JOIN permissions p ON rp.id_permission = p.id
-            WHERE u.id = :userId AND p.name = :permissionName
-            LIMIT 1
+            SELECT EXISTS (
+                SELECT 1 FROM users AS u
+                JOIN user_roles AS ur ON ur.id_user = u.id
+                JOIN roles AS r ON r.id = ur.id_role
+                JOIN role_permissions AS rp ON rp.id_role = r.id
+                JOIN permissions AS p ON p.id = rp.id_permission
+                WHERE u.id = :userId AND p.name = :permissionName OR u.id = :userId AND p.name = 'global.access'
+            ) AS is_allowed
         ");
         $query->execute([
             ':userId' => $userId,
             ':permissionName' => $permissionName
-        ]);
-
-        $result = $query->fetch(PDO::FETCH_ASSOC);
-        if ($result && (bool) $result['is_allowed']) {
-            return true;
-        }
-
-        // Check if the user has the 'ALL' permission
-        $query = $db->prepare("
-            SELECT rp.is_allowed
-            FROM users u
-            JOIN roles r ON u.rol = r.id
-            JOIN role_permissions rp ON r.id = rp.id_rol
-            JOIN permissions p ON rp.id_permission = p.id
-            WHERE u.id = :userId AND p.name = 'ALL'
-            LIMIT 1
-        ");
-        $query->execute([
-            ':userId' => $userId
         ]);
 
         $result = $query->fetch(PDO::FETCH_ASSOC);

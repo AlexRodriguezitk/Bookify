@@ -5,6 +5,8 @@ namespace App\controllers;
 use App\traits\ApiResponse;
 use App\traits\Log;
 use App\traits\HasPermissions;
+
+use App\modelsv2\UserModel;
 use App\models\User;
 use App\models\Rol;
 use Flight;

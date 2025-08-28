@@ -47,15 +47,16 @@ class UserModel
             return null;
         }
     }
-    public function getAll(?int $limit = 50, ?int $offset = 0, ?string $search = null): array
+    public function getAll(?int $limit = 50, ?int $offset = 0, ?string $search = null, ?bool $list_all = false): array
     {
         $query = "SELECT * FROM users";
 
         if ($search !== null) {
             $query .= " WHERE name LIKE :search OR username LIKE :search OR phone LIKE :search";
         }
-
+        $query .= !$list_all ? " WHERE deleted_at IS NULL" : "";
         $query .= " LIMIT $limit OFFSET $offset";
+
 
         try {
             $stmt = $this->pdo->prepare($query);
@@ -75,6 +76,28 @@ class UserModel
         } catch (PDOException $e) {
             // Aquí puedes loguear el error
             return [];
+        }
+    }
+
+    public function GetByField(string $field, string $value): ?UsersRep
+    {
+        $query = "SELECT * FROM users WHERE $field = :value";
+
+        try {
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute(['value' => $value]);
+
+            $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$data) {
+                return null;
+            }
+
+            // Pasar la data al repositorio
+            return new UsersRep($data);
+        } catch (PDOException $e) {
+            // Aquí puedes loguear el error
+            return null;
         }
     }
 
@@ -183,6 +206,26 @@ class UserModel
             return $user;
         } catch (\PDOException $e) {
             throw new \Exception("Error al actualizar el usuario: " . $e->getMessage());
+        }
+    }
+
+    public function softDelete(UsersRep $user): void
+    {
+        try {
+            $stmt = $this->pdo->prepare("UPDATE users SET deleted_at = :deleted_at WHERE id = :id");
+            $stmt->execute(['deleted_at' => new \DateTime(), 'id' => $user->id]);
+        } catch (\PDOException $e) {
+            throw new \Exception("Error al eliminar el usuario: " . $e->getMessage());
+        }
+    }
+
+    public function hardDelete(UsersRep $user): void
+    {
+        try {
+            $stmt = $this->pdo->prepare("DELETE FROM users WHERE id = :id");
+            $stmt->execute(['id' => $user->id]);
+        } catch (\PDOException $e) {
+            throw new \Exception("Error al eliminar el usuario: " . $e->getMessage());
         }
     }
 }
