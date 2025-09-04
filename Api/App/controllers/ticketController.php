@@ -29,7 +29,7 @@ class TicketController
         }
 
         $has_pagination = isset($_GET['page']) && isset($_GET['limit']);
-
+        $tickets = null;
 
         if ($has_pagination) {
             $page = $_GET['page'];
@@ -49,9 +49,113 @@ class TicketController
                 $ticket->asesor = User::get($ticket->asesor);
                 $ticket->client = User::get($ticket->client);
             }
+        } else {
+            $tickets = Ticket::GetAll();
+
+            if (empty($tickets)) {
+                $this->failed(null, 'Tickets not found', 404);
+                return;
+            }
+
+            foreach ($tickets as $ticket) {
+                $ticket->asesor = User::get($ticket->asesor);
+                $ticket->client = User::get($ticket->client);
+            }
         }
 
-        $this->success($tickets, 'Tickets list', 200);
+        $this->success([$tickets], 'Tickets list', 200);
+    }
+
+    public function myCreatedTickets()
+    {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.READ')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
+
+        $has_pagination = isset($_GET['page']) && isset($_GET['limit']);
+        $tickets = null;
+
+        if ($has_pagination) {
+            $page = $_GET['page'];
+            $limit = $_GET['limit'];
+
+            $offset = ($page - 1) * $limit;
+
+            $total = Ticket::Count();
+            $pages = ceil($total / $limit);
+            $tickets = Ticket::GetByClient($AuthUser->id, $limit, $offset);
+
+            if (empty($tickets)) {
+                $this->failed(null, 'Tickets not found', 404);
+                return;
+            }
+            foreach ($tickets as $ticket) {
+                $ticket->asesor = User::get($ticket->asesor);
+                $ticket->client = User::get($ticket->client);
+            }
+        } else {
+            $tickets = Ticket::GetByClient($AuthUser->id);
+
+            if (empty($tickets)) {
+                $this->failed(null, 'Tickets not found', 404);
+                return;
+            }
+
+            foreach ($tickets as $ticket) {
+                $ticket->asesor = User::get($ticket->asesor);
+                $ticket->client = User::get($ticket->client);
+            }
+        }
+
+        $this->success([$tickets], 'Tickets list', 200);
+    }
+
+    public function getQueueTickets()
+    {
+        $AuthUser = Flight::get('user');
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'TICKET.READ')) {
+            $this->failed(null, 'Unauthorized or permission denied', 403);
+            return;
+        }
+
+        $has_pagination = isset($_GET['page']) && isset($_GET['limit']);
+        $tickets = null;
+
+        if ($has_pagination) {
+            $page = $_GET['page'];
+            $limit = $_GET['limit'];
+
+            $offset = ($page - 1) * $limit;
+
+            $total = Ticket::Count();
+            $pages = ceil($total / $limit);
+            $tickets = Ticket::GetByAsesor(null, $limit, $offset);
+
+            if (empty($tickets)) {
+                $this->failed(null, 'Tickets not found', 404);
+                return;
+            }
+            foreach ($tickets as $ticket) {
+                $ticket->asesor = User::get($ticket->asesor);
+                $ticket->client = User::get($ticket->client);
+            }
+        } else {
+            $tickets = Ticket::GetByAsesor(null);
+
+            if (empty($tickets)) {
+                $this->failed(null, 'Tickets not found', 404);
+                return;
+            }
+
+            foreach ($tickets as $ticket) {
+                $ticket->asesor = User::get($ticket->asesor);
+                $ticket->client = User::get($ticket->client);
+            }
+        }
+
+        $this->success([$tickets], 'Tickets list', 200);
     }
 
     public function show($id)

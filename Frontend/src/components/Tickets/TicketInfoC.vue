@@ -69,7 +69,7 @@
                 >
                   <option value="NEW">Nuevo</option>
                   <option value="IN_PROGRESS">En progreso</option>
-                  <option value="CLOSED">Cerrado</option>
+                  <option value="CLOSED" disabled>Cerrado</option>
                 </select>
               </template>
             </li>
@@ -142,7 +142,17 @@
                   <span v-else class="ms-2">{{ ticket.asesor.name }}</span>
                 </template>
                 <template v-else>
-                  <span class="text-muted ms-2">Sin asignar</span>
+                  <span
+                    v-if="!readOnly && !ticket.asesor"
+                    class="text-muted ms-2"
+                    @mouseover="takeTicketButton = true"
+                    @mouseleave="takeTicketButton = false"
+                    @click="takeTicket(ticket.id)"
+                    style="cursor: pointer"
+                  >
+                    <span v-if="takeTicketButton">Tomar ticket</span>
+                    <span v-else>Sin asignar</span>
+                  </span>
                 </template>
               </span>
             </li>
@@ -232,6 +242,7 @@ export default {
       originalTitle: this.ticket.title,
       localStatus: this.ticket.status,
       editedTitle: this.ticket.title,
+      takeTicketButton: false,
     }
   },
   watch: {
@@ -260,6 +271,10 @@ export default {
           this.originalTitle = this.editedTitle
         }
       }
+    },
+
+    takeTicket(ticketId) {
+      this.$emit('take-ticket', ticketId)
     },
     getFieldValue(customFieldId) {
       const match = this.ticket.custom_values.find((v) => v.custom_field_id === customFieldId)

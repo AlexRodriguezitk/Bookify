@@ -2,13 +2,15 @@ import { defineStore } from 'pinia'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
+    id: '',
     name: '',
     username: '',
     rol: '',
-    profile_image: ''
+    profile_image: '',
   }),
   actions: {
     setUser(userData) {
+      this.id = userData.id
       this.name = userData.name
       this.username = userData.username
       this.rol = userData.rol
@@ -19,7 +21,7 @@ export const useUserStore = defineStore('user', {
       this.username = ''
       this.rol = ''
       this.profile_image = ''
-    }
+    },
   },
-  persist: true
+  persist: true,
 })

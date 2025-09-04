@@ -12,6 +12,8 @@ import Install from '@/views/Setup/InstallView.vue'
 import Dashboard from '@/views/Dashboard/DashboardView.vue'
 import Ticket from '@/views/Dashboard/Tickets/TicketView.vue'
 import Tickets from '@/views/Dashboard/Tickets/TicketsView.vue'
+import all from '@/views/Dashboard/Tickets/TicketAllView.vue'
+import Queue from '@/views/Dashboard/Tickets/TicketQueueView.vue'
 import Settings from '@/views/Settings/SettingsView.vue'
 import Roles from '@/views/Roles/RoleView.vue'
 import Categories from '@/views/Categories/CategoriesView.vue'
@@ -47,6 +49,16 @@ const routes = [
             path: ':id/',
             component: Ticket,
             meta: { requiresPermission: 'TICKETS.VIEW' },
+          },
+          {
+            path: 'queue',
+            component: Queue,
+            meta: { requiresPermission: 'TICKETS.VIEW' },
+          },
+          {
+            path: 'all',
+            component: all,
+            meta: { requiresPermission: 'LOG.READ' },
           },
         ],
       },

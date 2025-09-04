@@ -32,6 +32,7 @@ const AuthService = {
         Cookies.set('jwt', token, cookieOptions)
         const userStore = useUserStore()
         userStore.setUser({
+          id: user.id,
           name: user.name,
           username: user.username,
           rol: user.rol.name,
@@ -53,6 +54,7 @@ const AuthService = {
         Cookies.set('jwt', token, cookieOptions)
         const userStore = useUserStore()
         userStore.setUser({
+          id: user.id,
           name: user.name,
           username: user.username,
           rol: user.rol.name,
@@ -100,6 +102,7 @@ const AuthService = {
       if (user) {
         const userStore = useUserStore()
         userStore.setUser({
+          id: user.id,
           name: user.name,
           username: user.username,
           rol: user.rol.name,

@@ -15,11 +15,21 @@
       <li class="nav-item">
         <RouterLink
           class="nav-link d-flex align-items-center"
-          :class="{ active: $route.path === '/tickets/groups' }"
-          to="/tickets/groups"
+          :class="{ active: $route.path === '/tickets/queue' }"
+          to="/tickets/queue"
         >
-          <i class="fas fa-users me-2"></i>
-          Grupos</RouterLink
+          <i class="fas fa-list-ul me-2"></i>
+          Sin Asignar</RouterLink
+        >
+      </li>
+      <li class="nav-item">
+        <RouterLink
+          class="nav-link d-flex align-items-center"
+          :class="{ active: $route.path === '/tickets/all' }"
+          to="/tickets/all"
+        >
+          <i class="fas fa-clock-rotate-left me-2"></i>
+          Historico</RouterLink
         >
       </li>
     </ul>

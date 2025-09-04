@@ -501,12 +501,12 @@ ALTER TABLE `worklog`
 
 
 -- Insertar el rol de Administrador si no existe
-INSERT INTO roles (name) VALUES ('Admin'),('Dummy')
+INSERT INTO roles (name) VALUES ('Admin'),('Client')
 ON DUPLICATE KEY UPDATE id=id;
 
 -- Obtener el ID del rol Admin
 SET @admin_role_id = (SELECT id FROM roles WHERE name='Admin' LIMIT 1);
-SET @dummy_role_id = (SELECT id FROM roles WHERE name='Dummy' LIMIT 1);
+SET @dummy_role_id = (SELECT id FROM roles WHERE name='Client' LIMIT 1);
 
 -- -- Insertar el usuario administrador si no existe
 -- INSERT INTO users (name, username, password, phone, rol, is_active) 
@@ -592,6 +592,10 @@ INSERT INTO permissions (name, description) VALUES
     ('TICKET.CHANGE_STATUS', 'CHANGE TICKET STATUS'),
     ('TICKET.MERGE', 'MERGE TICKETS'),
     ('TICKET.ESCALATE', 'ESCALATE TICKET'),
+    ('TICKET.INTERN', 'SWITCH TICKET FOR INTERN'),
+    ('TICKET.TRANSFER', 'TRANSFER TICKET'),
+    ('TICKET.WORKLOG', 'ADD WORKLOG TO TICKET'),
+    ('TICKET.RESOLVE', 'RESOLVE TICKET'),
 
     -- UPLOADS
     ('UPLOADS.UPLOAD', 'UPLOAD FILES'),
@@ -605,6 +609,7 @@ INSERT INTO permissions (name, description) VALUES
     ('USER.DELETE', 'DELETE USER'),
     ('USER.ACTIVATE', 'ACTIVATE OR DEACTIVATE USER'),
     ('USER.ASSIGN_ROLE', 'ASSIGN ROLE TO USER'),
+    ('USER.2FA', 'ENABLE 2FA'),
 
     -- PROFILE
     ('PROFILE.READ', 'READ USER PROFILE'),
@@ -617,8 +622,18 @@ INSERT INTO permissions (name, description) VALUES
     ('WORKLOG.DELETE', 'DELETE WORKLOG'),
     ('WORKLOG.EXPORT', 'EXPORT WORKLOGS'),
 
-    ('READONLY', 'READ-ONLY ACCESS TO ALL RESOURCES')
+    ('READONLY', 'READ-ONLY ACCESS TO ALL RESOURCES'),
+
+    -- VIEWS
+    ('TICKETS.VIEW',       'VIEW TICKETS'),
+    ('DASHBOARD.VIEW',    'VIEW DASHBOARD'),
+    ('USERS.VIEW',        'VIEW USERS'),
+    ('PROFILE.VIEW',      'VIEW PROFILE'),
+    ('ACTIVITY.VIEW',     'VIEW ACTIVITY'),
+    ('SETTINGS.VIEW',     'VIEW SETTINGS')
 ON DUPLICATE KEY UPDATE description = VALUES(description);
+
+
 
 COMMIT;
 

@@ -386,7 +386,7 @@
                   class="form-control"
                   type="text"
                   placeholder="Ingrese el nombre de la categoría"
-                  maxlength="15"
+                  maxlength="100"
                   required
                 />
               </div>

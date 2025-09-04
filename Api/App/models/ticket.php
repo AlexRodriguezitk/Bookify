@@ -163,31 +163,60 @@ class ticket
     }
 
     //Funcion para obtener tickets por asesor
-    public static function GetByAsesor($asesor, $limit = null, $offset = 0)
+    public static function GetByAsesor($asesor = null, $limit = null, $offset = 0)
     {
-        $query = "SELECT * FROM tickets WHERE id_asesor = :asesor";
-        $query = $limit ? $query . " LIMIT $limit OFFSET $offset" : $query;
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
+
+            if ($asesor === null) {
+                // Buscar tickets SIN asesor asignado
+                $query = "SELECT * FROM tickets WHERE id_asesor IS NULL";
+            } else {
+                // Buscar tickets del asesor específico
+                $query = "SELECT * FROM tickets WHERE id_asesor = :asesor";
+            }
+
+            if ($limit) {
+                $query .= " LIMIT :limit OFFSET :offset";
+            }
+
             $stmt = $connection->prepare($query);
+
+            if ($asesor !== null) {
+                $stmt->bindValue(':asesor', $asesor, PDO::PARAM_INT);
+            }
+
             if ($limit) {
                 $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
                 $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
             }
-            $stmt->bindParam(':asesor', $asesor);
-            $stmt->execute();
 
+            $stmt->execute();
             $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
             $tickets = [];
-            foreach ($result as $key => $value) {
-                $tickets[] = new ticket($value['id'], $value['id_client'], $value['title'], $value['description'], $value['creation_date'], $value['status'], $value['priority'], $value['id_category'], $value['id_asesor']);
+            foreach ($result as $value) {
+                $tickets[] = new ticket(
+                    $value['id'],
+                    $value['id_client'],
+                    $value['title'],
+                    $value['description'],
+                    $value['creation_date'],
+                    $value['status'],
+                    $value['priority'],
+                    $value['id_category'],
+                    $value['id_asesor']
+                );
             }
+
             return $tickets;
         } catch (PDOException $e) {
             throw new Exception("Error al obtener los tickets del asesor: " . $e->getMessage());
         }
     }
+
+
 
     public static function countByAsesor($asesor)
     {
@@ -205,16 +234,53 @@ class ticket
         }
     }
     //Funcion para obtener tickets por cliente
-    public static function GetByClient($client)
+    public static function GetByClient($client = null, $limit = null, $offset = 0)
     {
         try {
             $db = Database::getInstance();
             $connection = $db->getConnection();
-            $query = "SELECT * FROM tickets WHERE client = :client";
+
+            if ($client === null) {
+                // Buscar tickets SIN cliente asignado
+                $query = "SELECT * FROM tickets WHERE id_client IS NULL";
+            } else {
+                // Buscar tickets del cliente específico
+                $query = "SELECT * FROM tickets WHERE id_client = :client";
+            }
+
+            if ($limit) {
+                $query .= " LIMIT :limit OFFSET :offset";
+            }
+
             $stmt = $connection->prepare($query);
-            $stmt->bindParam(':client', $client);
+
+            if ($client !== null) {
+                $stmt->bindValue(':client', $client, PDO::PARAM_INT);
+            }
+
+            if ($limit) {
+                $stmt->bindValue(':limit', (int) $limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+            }
+
             $stmt->execute();
-            $tickets = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $tickets = [];
+            foreach ($result as $value) {
+                $tickets[] = new ticket(
+                    $value['id'],
+                    $value['id_client'],
+                    $value['title'],
+                    $value['description'],
+                    $value['creation_date'],
+                    $value['status'],
+                    $value['priority'],
+                    $value['id_category'],
+                    $value['id_asesor']
+                );
+            }
+
             return $tickets;
         } catch (PDOException $e) {
             throw new Exception("Error al obtener los tickets del cliente: " . $e->getMessage());

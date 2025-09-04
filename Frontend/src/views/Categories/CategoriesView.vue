@@ -129,7 +129,7 @@
                   id="fieldName"
                   v-model="customFieldToEdit.name"
                   class="form-control"
-                  :class="{ 'is-invalid': customFieldToEdit.name.length > 20 }"
+                  :class="{ 'is-invalid': customFieldToEdit.name.length > 100 }"
                   type="text"
                   placeholder="Ingrese el nombre del campo"
                   required

@@ -355,7 +355,7 @@ class UserController
     public function generateTotpSecret()
     {
         $AuthUser = Flight::get('user');
-        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.ACTIVATE')) {
+        if (!$AuthUser || !isset($AuthUser->id) || !method_exists($this, 'checkPermission') || !$this->checkPermission($AuthUser->id, 'USER.2FA')) {
             $this->failed(null, 'Unauthorized or permission denied', 403);
             return;
         }

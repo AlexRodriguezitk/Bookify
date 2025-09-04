@@ -20,6 +20,7 @@
               :ticket="ticket"
               @update-status="uptadeStatus(ticket.id, $event)"
               @update-title="updateTitle(ticket.id, $event)"
+              @take-ticket="takeTicket(ticket.id, $event)"
             />
           </div>
           <div class="col-lg-8 mt-3 mt-lg-0">
@@ -85,6 +86,7 @@ import TicketInfoC from '@/components/Tickets/TicketInfoC.vue'
 import InteractionsC from '@/components/Tickets/InteractionsC.vue'
 import TransferModal from '@/components/Tickets/TransferModal.vue'
 import Permissions from '@/services/permissions'
+import { useUserStore } from '@/stores/user'
 import { makeQuery } from '@/services/api'
 
 export default {
@@ -102,6 +104,7 @@ export default {
       publicT: false,
       intervalId: null,
       canWorklog: false,
+      userStore: useUserStore(),
     }
   },
   created() {
@@ -185,6 +188,16 @@ export default {
     async uptadeStatus(ticketId, status) {
       try {
         await makeQuery(`/tickets/${ticketId}`, 'PUT', { status: status })
+      } catch (error) {
+        console.error('Error updating ticket status:', error)
+      }
+    },
+
+    async takeTicket(ticketId) {
+      try {
+        const user_id = this.userStore.id
+        await makeQuery(`/tickets/${ticketId}`, 'PUT', { asesor: user_id })
+        this.fetchTicketById(ticketId)
       } catch (error) {
         console.error('Error updating ticket status:', error)
       }
