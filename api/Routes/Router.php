@@ -2,20 +2,20 @@
 
 namespace routes;
 
-use App\controllers\InstallController;
-use App\controllers\UserController;
-use App\controllers\RolController;
-use App\controllers\TerminalController;
-use App\controllers\CategoryController;
-use App\controllers\CTFieldsController;
-use App\controllers\TicketController;
-use App\controllers\InteractionController;
-use App\controllers\LogController;
-use App\controllers\PermissionController;
-use App\controllers\STHistoryController;
-use App\controllers\WorkLogController;
-use App\controllers\UploadController;
-use App\controllers\SettingsController;
+use App\Controllers\InstallController;
+use App\Controllers\UserController;
+use App\Controllers\RolController;
+use App\Controllers\TerminalController;
+use App\Controllers\CategoryController;
+use App\Controllers\CTFieldsController;
+use App\Controllers\TicketController;
+use App\Controllers\InteractionController;
+use App\Controllers\LogController;
+use App\Controllers\PermissionController;
+use App\Controllers\STHistoryController;
+use App\Controllers\WorkLogController;
+use App\Controllers\UploadController;
+use App\Controllers\SettingsController;
 
 use App\Auth;
 

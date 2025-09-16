@@ -5,7 +5,7 @@ namespace App;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use App\models\User;
+use App\Models\User;
 use Exception;
 use GrahamCampbell\ResultType\Success;
 

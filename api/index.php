@@ -2,7 +2,7 @@
 require_once __DIR__ . '/vendor/autoload.php';
 
 use App\Auth;
-use App\database\Database;
+use App\Database\Database;
 use App\Controllers\InstallController;
 
 // ✅ Configuración centralizada

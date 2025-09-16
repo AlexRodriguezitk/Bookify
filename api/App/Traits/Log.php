@@ -3,7 +3,7 @@
 
 namespace App\Traits;
 
-use App\models\Log as LogModel;
+use App\Models\Log as LogModel;
 
 trait Log
 {

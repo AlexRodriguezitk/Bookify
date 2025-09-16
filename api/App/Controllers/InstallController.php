@@ -99,7 +99,7 @@ class InstallController
                 $dbCreated = true; // Marcar que se creó
 
                 // Ejecutar script SQL
-                $sqlFile = __DIR__ . "/../database/DEMO.sql";
+                $sqlFile = __DIR__ . "/../Database/DEMO.sql";
                 if (!file_exists($sqlFile)) {
                     throw new Exception('Archivo DB.SQL no encontrado.');
                 }
@@ -109,9 +109,18 @@ class InstallController
                 $sql = str_replace('{DB_NAME}', $dbName, $sql);
                 $pdo->exec($sql);
             } else {
-                // ✅ Si ya existe, solo seleccionarla
+                $dbCreated = true; // Marcar que se creó
+
+                // Ejecutar script SQL
+                $sqlFile = __DIR__ . "/../Database/DEMO.sql";
+                if (!file_exists($sqlFile)) {
+                    throw new Exception('Archivo DB.SQL no encontrado.');
+                }
+
                 $pdo->exec("USE `$dbName`;");
-                $dbCreated = true;
+                $sql = file_get_contents($sqlFile);
+                $sql = str_replace('{DB_NAME}', $dbName, $sql);
+                $pdo->exec($sql);
             }
 
             // // Insertar admin

@@ -15,7 +15,7 @@ class Database
     // Constructor
     private function __construct()
     {
-        $config = require __DIR__ . '/../config/config.php';
+        $config = require __DIR__ . '/../Config/Config.php';
 
         try {
             $dsn = "mysql:host={$config['db']['host']};dbname={$config['db']['name']}";
