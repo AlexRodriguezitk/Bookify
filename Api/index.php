@@ -50,7 +50,7 @@ Flight::before('start', function () use ($db, $is_installed) {
 });
 
 // Cargar rutas
-require 'routes/router.php';
+require 'Routes/router.php';
 
 // Iniciar Flight
 Flight::start();

@@ -12,7 +12,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: '../App', // Exporta directamente a la carpeta superior
+    outDir: '../app', // Exporta directamente a la carpeta superior
     emptyOutDir: false, // Evita que se eliminen archivos existentes en ../
   },
   server: {
