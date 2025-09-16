@@ -1,6 +1,6 @@
 <?php
 
-namespace App\models;
+namespace App\Models;
 //Importar base de datos;
 use App\database\Database;
 use App\traits\ApiResponse;
@@ -9,7 +9,8 @@ use PDO;
 use PDOException;
 use Exception;
 
-class Terminal {
+class Terminal
+{
     public $id;
     public $terminal_ext;
 
@@ -49,7 +50,7 @@ class Terminal {
             $stmt->bindParam(':id', $id);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($result){
+            if ($result) {
                 return new terminal($result['id'], $result['terminal_ext']);
             }
         } catch (PDOException $e) {
@@ -139,7 +140,7 @@ class Terminal {
             throw new Exception("Error al asignar la terminal: " . $e->getMessage());
         }
     }
-    
+
     //desasignar terminal
     public static function Unassign($terminal, $asesor)
     {
@@ -157,5 +158,4 @@ class Terminal {
             throw new Exception("Error al desasignar la terminal: " . $e->getMessage());
         }
     }
-
 }

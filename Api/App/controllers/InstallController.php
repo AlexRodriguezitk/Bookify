@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\traits\ApiResponse;
+use App\Traits\ApiResponse;
 use Flight;
 use Exception;
 use PDO;

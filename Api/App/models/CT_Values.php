@@ -1,8 +1,8 @@
 <?php
 
-namespace App\models;
+namespace App\Models;
 //Importar base de datos;
-use App\database\Database;
+use App\Database\Database;
 
 use PDO;
 use PDOException;
@@ -53,7 +53,7 @@ class CT_Values
             $stmt->bindParam(':id', $id);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($result){
+            if ($result) {
                 return new CT_Values($result['id'], $result['custom_field_id'], $result['ticket_id'], $result['value']);
             }
         } catch (PDOException $e) {

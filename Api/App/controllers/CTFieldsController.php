@@ -1,11 +1,11 @@
 <?php
 
-namespace App\controllers;
+namespace App\Controllers;
 
-use App\traits\Log;
-use App\traits\ApiResponse;
-use App\traits\HasPermissions;
-use App\models\CT_Fields;
+use App\Traits\Log;
+use App\Traits\ApiResponse;
+use App\Traits\HasPermissions;
+use App\Models\CT_Fields;
 use Flight;
 
 class CTFieldsController

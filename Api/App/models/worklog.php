@@ -1,6 +1,6 @@
 <?php
 
-namespace App\models;
+namespace App\Models;
 //Importar base de datos;
 use App\database\Database;
 
@@ -18,7 +18,8 @@ class WorkLog
     public $work_description;
     public $log_date;
 
-    public function __construct($id = null, $id_ticket = null, $id_user = null, $time_spent = null, $work_description = null, $log_date = null){
+    public function __construct($id = null, $id_ticket = null, $id_user = null, $time_spent = null, $work_description = null, $log_date = null)
+    {
         $this->id = $id;
         $this->id_ticket = $id_ticket;
         $this->id_user = $id_user;
@@ -55,8 +56,8 @@ class WorkLog
             $stmt->bindParam(':id', $id);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($result){
-                return new self($result['id'],$result['id_ticket'], $result['id_user'], $result['time_spent'], $result['work_description'], $result['log_date']);
+            if ($result) {
+                return new self($result['id'], $result['id_ticket'], $result['id_user'], $result['time_spent'], $result['work_description'], $result['log_date']);
             }
         } catch (PDOException $e) {
             throw new Exception("Error al obtener el registro: " . $e->getMessage());
@@ -102,7 +103,7 @@ class WorkLog
         } catch (PDOException $e) {
             throw new Exception("Error al actualizar el registro: " . $e->getMessage());
         }
-    } 
+    }
 
     //Funcion para eliminar un registro
     public static function Delete($id)

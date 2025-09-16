@@ -6,7 +6,7 @@ use App\database\Database;
 use App\Controllers\InstallController;
 
 // ✅ Configuración centralizada
-$config = require __DIR__ . '/App/config/config.php';
+$config = require __DIR__ . '/App/Config/Config.php';
 
 // Variables desde config.php (ya procesadas desde .env o entorno)
 $baseUrl      = $config['base_url'];
@@ -50,7 +50,7 @@ Flight::before('start', function () use ($db, $is_installed) {
 });
 
 // Cargar rutas
-require 'Routes/router.php';
+require 'Routes/Router.php';
 
 // Iniciar Flight
 Flight::start();

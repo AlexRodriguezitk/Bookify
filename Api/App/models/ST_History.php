@@ -1,6 +1,6 @@
 <?php
 
-namespace App\models;
+namespace App\Models;
 //Importar base de datos;
 use App\database\Database;
 
@@ -57,7 +57,7 @@ class ST_History
             $stmt->bindParam(':id', $id);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($result){
+            if ($result) {
                 return new ST_History($result['id'], $result['id_ticket'], $result['last_status'], $result['new_status'], $result['update_date'], $result['id_asesor']);
             }
         } catch (PDOException $e) {

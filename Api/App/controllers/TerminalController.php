@@ -1,12 +1,12 @@
 <?php
 
-namespace App\controllers;
+namespace App\Controllers;
 
-use App\traits\ApiResponse;
-use App\traits\Log;
-use App\traits\HasPermissions;
-use App\models\Terminal;
-use App\models\User;
+use App\Traits\ApiResponse;
+use App\Traits\Log;
+use App\Traits\HasPermissions;
+use App\Models\Terminal;
+use App\Models\User;
 
 use Flight;
 use Exception;

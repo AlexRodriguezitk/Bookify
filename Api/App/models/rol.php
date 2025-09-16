@@ -1,6 +1,6 @@
 <?php
 
-namespace App\models;
+namespace App\Models;
 //Importar base de datos;
 use App\database\Database;
 
@@ -8,7 +8,8 @@ use PDO;
 use PDOException;
 use Exception;
 
-class Rol {
+class Rol
+{
     public $id;
     public $name;
 
@@ -48,7 +49,7 @@ class Rol {
             $stmt->bindParam(':id', $id);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($result){
+            if ($result) {
                 return new Rol($result['id'], $result['name']);
             }
         } catch (PDOException $e) {
@@ -105,4 +106,3 @@ class Rol {
         }
     }
 }
-

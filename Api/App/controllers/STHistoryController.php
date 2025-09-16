@@ -1,12 +1,12 @@
 <?php
 
-namespace App\controllers;
+namespace App\Controllers;
 
 
-use App\traits\ApiResponse;
-use App\traits\HasPermissions;
-use App\models\ticket;
-use App\models\ST_History as ST_HistoryModel;
+use App\Traits\ApiResponse;
+use App\Traits\HasPermissions;
+use App\Models\ticket;
+use App\Models\ST_History as ST_HistoryModel;
 use Flight;
 
 class STHistoryController

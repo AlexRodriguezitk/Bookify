@@ -1,14 +1,14 @@
 <?php
 
-namespace App\models;
+namespace App\Models;
 //Importar base de datos;
-use App\database\Database;
+use App\Database\Database;
 
 use PDO;
 use PDOException;
 use Exception;
 
-class log
+class Log
 {
     public $id;
     public $action;
@@ -55,7 +55,7 @@ class log
             $stmt->bindParam(':id', $id);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($result){
+            if ($result) {
                 return new log($result['id'], $result['action'], $result['details'], $result['id_user'], $result['log_date']);
             }
         } catch (PDOException $e) {

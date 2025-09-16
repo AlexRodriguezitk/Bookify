@@ -1,10 +1,10 @@
 <?php
 
-namespace App\controllers;
+namespace App\Controllers;
 
-use App\traits\ApiResponse;
-use App\traits\HasPermissions;
-use App\models\Setting as SettingModel;
+use App\Traits\ApiResponse;
+use App\Traits\HasPermissions;
+use App\Models\Setting as SettingModel;
 use Flight;
 
 class SettingsController

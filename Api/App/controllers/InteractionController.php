@@ -1,13 +1,13 @@
 <?php
 
-namespace App\controllers;
+namespace App\Controllers;
 
-use App\traits\Log;
-use App\traits\ApiResponse;
-use App\traits\HasPermissions;
-use App\models\Interaction;
-use App\models\ticket;
-use App\models\User;
+use App\Traits\Log;
+use App\Traits\ApiResponse;
+use App\Traits\HasPermissions;
+use App\Models\Interaction;
+use App\Models\Ticket;
+use App\Models\User;
 use Flight;
 
 class InteractionController

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\models;
+namespace App\Models;
 //Importar base de datos;
 use App\database\Database;
 
@@ -9,7 +9,7 @@ use PDOException;
 use Exception;
 use flight\net\Response;
 
-class ticket
+class Ticket
 {
     public $id;
     public $client;

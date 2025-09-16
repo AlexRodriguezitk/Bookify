@@ -1,14 +1,14 @@
 <?php
 
-namespace App\controllers;
+namespace App\Controllers;
 
-use App\traits\ApiResponse;
+use App\Traits\ApiResponse;
 use App\traits\Log;
-use App\traits\ST_History;
-use App\traits\HasPermissions;
-use App\models\Ticket;
-use App\models\User;
-use App\models\worklog;
+use App\Traits\ST_History;
+use App\Traits\HasPermissions;
+use App\Models\Ticket;
+use App\Models\User;
+use App\Models\worklog;
 
 use Flight;
 

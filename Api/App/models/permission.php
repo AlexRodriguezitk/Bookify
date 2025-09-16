@@ -1,6 +1,6 @@
 <?php
 
-namespace App\models;
+namespace App\Models;
 //Importar base de datos;
 use App\database\Database;
 
@@ -8,7 +8,7 @@ use PDO;
 use PDOException;
 use Exception;
 
-class permission
+class Permission
 {
     public $id;
     public $name;

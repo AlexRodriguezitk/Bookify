@@ -1,8 +1,8 @@
 <?php
 
-namespace App\models;
+namespace App\Models;
 //Importar base de datos;
-use App\database\Database;
+use App\Database\Database;
 
 use PDO;
 use PDOException;

@@ -1,7 +1,8 @@
 <?php
 //Trait to save Logs on Database
 
-namespace App\traits;
+namespace App\Traits;
+
 use App\models\Log as LogModel;
 
 trait Log

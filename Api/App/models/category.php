@@ -1,8 +1,8 @@
 <?php
 
-namespace App\models;
+namespace App\Models;
 //Importar base de datos;
-use App\database\Database;
+use App\Database\Database;
 
 use PDO;
 use PDOException;
@@ -48,7 +48,7 @@ class Category
             $stmt->bindParam(':id', $id);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($result){
+            if ($result) {
                 return new Category($result['id'], $result['name']);
             }
         } catch (PDOException $e) {
@@ -104,5 +104,4 @@ class Category
             throw new Exception("Error al eliminar la categoria: " . $e->getMessage());
         }
     }
-
 }
